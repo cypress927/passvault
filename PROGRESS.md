@@ -1,5 +1,7 @@
 # passmgmt 进度记录
 
+> 新会话先读 `CLAUDE.md`；本文件记录详细进度。
+
 最后更新：2026-11-11
 
 ## 项目目标
@@ -48,7 +50,7 @@ npm run preview
 ## Git
 
 - 本地仓库，`main` 分支。
-- 提交：
+- 主要提交（最新见 `git log --oneline`）：
   - `8e03c06` Add mobile master-detail layout
   - `7e854ac` Add typed fields, password generator and live TOTP
   - `452e54c` Add KeePass CSV import
