@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { AppApi } from '../state/useVaultApp'
+import { CsvImportDialog } from './CsvImportDialog'
 import { ItemEditor } from './ItemEditor'
 import { PromptDialog } from './PromptDialog'
 import { TemplatePicker } from './TemplatePicker'
@@ -14,6 +15,7 @@ import {
   SearchIcon,
   ShieldIcon,
   TrashIcon,
+  UploadIcon,
 } from './icons'
 
 type FolderDialog =
@@ -23,6 +25,7 @@ type FolderDialog =
 export function Workspace({ app }: { app: AppApi }) {
   const [pickerOpen, setPickerOpen] = useState(false)
   const [folderDialog, setFolderDialog] = useState<FolderDialog | null>(null)
+  const [csvOpen, setCsvOpen] = useState(false)
   const ungroupedCount = app.items.filter((item) => item.folderId === null).length
 
   return (
@@ -42,6 +45,14 @@ export function Workspace({ app }: { app: AppApi }) {
           )}
         </div>
         <div className="toolbar-actions">
+          <button
+            className="button"
+            onClick={() => setCsvOpen(true)}
+            disabled={app.busy !== null}
+          >
+            <UploadIcon size={16} />
+            导入 CSV
+          </button>
           <button
             className="button primary"
             onClick={() => void app.exportCurrent()}
@@ -188,6 +199,8 @@ export function Workspace({ app }: { app: AppApi }) {
       </div>
 
       {pickerOpen && <TemplatePicker app={app} onClose={() => setPickerOpen(false)} />}
+
+      {csvOpen && <CsvImportDialog app={app} onClose={() => setCsvOpen(false)} />}
 
       {folderDialog && (
         <PromptDialog

@@ -3,6 +3,7 @@ import { toBufferSource } from '../crypto/bytes'
 import { randomId } from '../crypto/random'
 import type { Field, FileValue, Folder, Item, Template, VaultData } from '../vault/model'
 import type { Header } from '../vault/format'
+import type { ParsedCsvImport } from '../vault/keepassCsv'
 import { itemFromTemplate } from '../vault/templates'
 import { createVault, exportVault, openVault } from '../vault/vault'
 
@@ -27,12 +28,15 @@ export interface AppApi {
   query: string
   busy: string | null
   error: string | null
+  notice: string | null
   folders: Folder[]
   activeFolder: FolderFilter
   templates: Template[]
 
   setError(message: string): void
   dismissError(): void
+  showNotice(message: string): void
+  dismissNotice(): void
 
   create(password: string): Promise<void>
   importFile(file: File, password: string): Promise<void>
@@ -62,6 +66,8 @@ export interface AppApi {
 
   saveTemplate(template: Template): void
   deleteTemplate(id: string): void
+
+  importCsv(parsed: ParsedCsvImport): void
 }
 
 function errorMessage(error: unknown): string {
@@ -100,6 +106,13 @@ function downloadBytes(bytes: Uint8Array, filename: string): void {
 
 const EMPTY_FILE: FileValue = { kind: 'file', blobId: null, filename: '', mime: '', size: 0 }
 
+function cloneField(field: Field): Field {
+  if (field.value.kind === 'text') {
+    return { key: field.key, hint: field.hint, value: { kind: 'text', text: field.value.text } }
+  }
+  return { key: field.key, hint: field.hint, value: { ...field.value } }
+}
+
 export function useVaultApp(): AppApi {
   const [session, setSession] = useState<Session | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -107,6 +120,7 @@ export function useVaultApp(): AppApi {
   const [activeFolder, setActiveFolder] = useState<FolderFilter>('all')
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
 
   const create = useCallback(async (password: string) => {
     setBusy('正在生成密钥…')
@@ -167,6 +181,7 @@ export function useVaultApp(): AppApi {
     setQuery('')
     setActiveFolder('all')
     setError(null)
+    setNotice(null)
   }, [])
 
   const updateItem = useCallback((id: string, updater: (item: Item) => Item) => {
@@ -431,6 +446,53 @@ export function useVaultApp(): AppApi {
     })
   }, [])
 
+  const showNotice = useCallback((message: string) => {
+    setNotice(message)
+    setError(null)
+  }, [])
+
+  const dismissNotice = useCallback(() => setNotice(null), [])
+
+  const importCsv = useCallback((parsed: ParsedCsvImport) => {
+    setSession((current) => {
+      if (!current) return current
+
+      const folders = [...current.data.manifest.folders]
+      const folderByName = new Map(folders.map((folder) => [folder.name, folder.id]))
+      for (const name of parsed.folders) {
+        if (!folderByName.has(name)) {
+          const folder: Folder = { id: randomId(), name }
+          folders.push(folder)
+          folderByName.set(name, folder.id)
+        }
+      }
+
+      const items: Item[] = parsed.entries.map((entry) => ({
+        id: randomId(),
+        name: entry.name,
+        description: entry.description,
+        folderId: entry.folderName ? (folderByName.get(entry.folderName) ?? null) : null,
+        fields: entry.fields.map(cloneField),
+      }))
+
+      return {
+        ...current,
+        dirty: true,
+        data: {
+          ...current.data,
+          manifest: {
+            ...current.data.manifest,
+            updatedAt: new Date().toISOString(),
+            folders,
+            items: [...current.data.manifest.items, ...items],
+          },
+        },
+      }
+    })
+    setActiveFolder('all')
+    setQuery('')
+  }, [])
+
   const getBlob = useCallback(
     (blobId: string | null) => (blobId ? session?.data.blobs.get(blobId) : undefined),
     [session],
@@ -466,11 +528,14 @@ export function useVaultApp(): AppApi {
     query,
     busy,
     error,
+    notice,
     folders,
     activeFolder,
     templates,
     setError,
     dismissError: () => setError(null),
+    showNotice,
+    dismissNotice,
     create,
     importFile,
     exportCurrent,
@@ -494,5 +559,6 @@ export function useVaultApp(): AppApi {
     deleteFolder,
     saveTemplate,
     deleteTemplate,
+    importCsv,
   }
 }

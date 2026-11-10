@@ -28,6 +28,19 @@ npm run build    # 生产构建，产物在 dist/
 
 用户模板保存在加密库内，随导出文件一起走。未导出就关闭页面，修改会丢失；界面会显示"未导出"状态。
 
+## 从 KeePass 导入
+
+工作区顶栏的「导入 CSV」支持两种实际格式：
+
+- **KeePassXC CSV**：`Group, Title, Username, Password, URL, Notes, TOTP, Icon, Last Modified, Created`
+- **KeePass 1.x / 2.x CSV**：`Account, Login Name, Password, Web Site, Comments`
+
+映射规则：`Group` 原样作为文件夹名；`Title/Account` → 条目标题；`Notes/Comments` → 描述；用户名、密码、网址、TOTP → 对应字段；其它非空列也作为文本字段导入。`Icon`、时间戳等元数据列忽略。空单元格不创建字段。不查重，同一个文件导入两次会产生重复条目。
+
+CSV 是明文，导入后请删除原文件。导入会合并到当前库，并切换到「全部条目」。
+
+
+
 > 当前是开发阶段，数据格式不保证向后兼容。
 
 ## 加密
@@ -44,7 +57,7 @@ npm run build    # 生产构建，产物在 dist/
 
 ```
 src/crypto/   Argon2id、分块 AES-GCM、密钥包装
-src/vault/    数据模型、内置模板、.vault 头格式、容器打包、创建/打开/导出
+src/vault/    数据模型、内置模板、KeePass CSV 解析、.vault 头格式、容器打包、创建/打开/导出
 src/state/    React 状态与操作
 src/ui/       欢迎页、工作区、条目编辑器、字段行
 tests/        加密、格式、容器、端到端回归测试

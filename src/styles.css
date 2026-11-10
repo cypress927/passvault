@@ -1814,3 +1814,88 @@ textarea.editor-description:focus {
     width: calc(100vw - 24px);
   }
 }
+
+.toast.success {
+  border-left-color: var(--success);
+}
+
+.toast.success .toast-dot {
+  background: var(--success);
+}
+
+.badge.info {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.import-panel {
+  width: min(720px, calc(100vw - 48px));
+}
+
+.import-body {
+  padding: 0 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+}
+
+.import-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.import-format {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.import-summary {
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+.import-columns {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.import-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+}
+
+.import-note {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.import-note.warning {
+  color: var(--warning);
+}
