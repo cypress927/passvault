@@ -4,13 +4,15 @@ import type { Template } from '../src/vault/model'
 import { itemFromTemplate } from '../src/vault/templates'
 
 describe('itemFromTemplate', () => {
-  it('copies the field structure with empty values', () => {
+  it('copies the field structure with empty typed values', () => {
     const template: Template = {
       id: 'tpl-1',
       name: '信用卡',
       description: '',
       fields: [
         { key: '卡号', kind: 'text' },
+        { key: '密码', kind: 'password' },
+        { key: 'TOTP 密钥', kind: 'totp' },
         { key: '照片', kind: 'file', hint: '卡正面' },
       ],
     }
@@ -18,6 +20,8 @@ describe('itemFromTemplate', () => {
     expect(item.folderId).toBe('folder-1')
     expect(item.fields).toEqual([
       { key: '卡号', hint: undefined, value: { kind: 'text', text: '' } },
+      { key: '密码', hint: undefined, value: { kind: 'password', text: '' } },
+      { key: 'TOTP 密钥', hint: undefined, value: { kind: 'totp', text: '' } },
       {
         key: '照片',
         hint: '卡正面',
@@ -50,12 +54,13 @@ describe('itemFromTemplate', () => {
 describe('built-in templates', () => {
   it('have unique ids and valid fields', () => {
     const ids = new Set<string>()
+    const kinds = new Set(['text', 'password', 'totp', 'file'])
     for (const template of BUILTIN_TEMPLATES) {
       expect(ids.has(template.id)).toBe(false)
       ids.add(template.id)
       expect(template.name).not.toBe('')
       for (const field of template.fields) {
-        expect(field.kind === 'text' || field.kind === 'file').toBe(true)
+        expect(kinds.has(field.kind)).toBe(true)
         expect(field.key).not.toBe('')
       }
     }
@@ -69,5 +74,27 @@ describe('built-in templates', () => {
       expect(field?.kind).toBe('text')
       expect(field?.hint).toBeUndefined()
     }
+  })
+
+  it('mark passwords and add TOTP to account templates', () => {
+    const site = BUILTIN_TEMPLATES.find((item) => item.id === 'builtin:site-account')
+    expect(site?.fields.find((field) => field.key === '密码')?.kind).toBe('password')
+    expect(site?.fields.find((field) => field.key === 'TOTP 密钥')?.kind).toBe('totp')
+
+    for (const id of [
+      'builtin:site-account',
+      'builtin:app-account',
+      'builtin:email',
+      'builtin:game',
+    ]) {
+      const template = BUILTIN_TEMPLATES.find((item) => item.id === id)
+      expect(template?.fields.some((field) => field.kind === 'totp')).toBe(true)
+    }
+  })
+
+  it('mark financial secrets as passwords', () => {
+    const card = BUILTIN_TEMPLATES.find((item) => item.id === 'builtin:credit-card')
+    expect(card?.fields.find((field) => field.key === '交易密码')?.kind).toBe('password')
+    expect(card?.fields.find((field) => field.key === '安全码 CVV2')?.kind).toBe('password')
   })
 })

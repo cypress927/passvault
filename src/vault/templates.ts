@@ -8,7 +8,7 @@ export function emptyField(field: TemplateField): Field {
     value:
       field.kind === 'file'
         ? { kind: 'file', blobId: null, filename: '', mime: '', size: 0 }
-        : { kind: 'text', text: '' },
+        : { kind: field.kind, text: '' },
   }
 }
 

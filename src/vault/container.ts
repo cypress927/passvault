@@ -177,7 +177,12 @@ function validateTemplates(value: unknown[]): Template[] {
         if (!isRecord(rawField)) {
           throw new Error(`数据已损坏：模板 ${index} 的字段 ${fieldIndex} 结构异常`)
         }
-        if (rawField.kind !== 'text' && rawField.kind !== 'file') {
+        if (
+          rawField.kind !== 'text' &&
+          rawField.kind !== 'password' &&
+          rawField.kind !== 'totp' &&
+          rawField.kind !== 'file'
+        ) {
           throw new Error(`数据已损坏：模板 ${index} 的字段 ${fieldIndex} 类型异常`)
         }
         return {
@@ -227,12 +232,12 @@ function validateField(value: unknown, itemIndex: number, fieldIndex: number): F
   const hint = optionalString(value.hint, `items[${itemIndex}].fields[${fieldIndex}].hint`)
   const rawValue = value.value
 
-  if (rawValue.kind === 'text') {
+  if (rawValue.kind === 'text' || rawValue.kind === 'password' || rawValue.kind === 'totp') {
     return {
       key,
       hint,
       value: {
-        kind: 'text',
+        kind: rawValue.kind,
         text: requireString(rawValue.text, `items[${itemIndex}].fields[${fieldIndex}].text`),
       },
     }

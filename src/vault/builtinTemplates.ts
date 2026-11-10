@@ -1,6 +1,8 @@
 import type { Template, TemplateField } from './model'
 
 const text = (key: string, hint?: string): TemplateField => ({ key, kind: 'text', hint })
+const password = (key: string, hint?: string): TemplateField => ({ key, kind: 'password', hint })
+const totp = (key: string): TemplateField => ({ key, kind: 'totp' })
 const file = (key: string, hint?: string): TemplateField => ({ key, kind: 'file', hint })
 
 /** Built-in templates only define field structure. They never prefill values. */
@@ -12,11 +14,12 @@ export const BUILTIN_TEMPLATES: Template[] = [
     fields: [
       text('登录平台'),
       text('账号'),
-      text('密码'),
+      password('密码'),
       text('手机号'),
       text('邮箱'),
       text('密保问题'),
       text('密保答案'),
+      totp('TOTP 密钥'),
     ],
   },
   {
@@ -26,12 +29,13 @@ export const BUILTIN_TEMPLATES: Template[] = [
     fields: [
       text('登录平台'),
       text('手机号'),
-      text('登录密码'),
+      password('登录密码'),
       text('绑定微信'),
       text('绑定 QQ'),
       text('实名姓名'),
       text('身份证号'),
       text('备用手机号'),
+      totp('TOTP 密钥'),
     ],
   },
   {
@@ -40,11 +44,12 @@ export const BUILTIN_TEMPLATES: Template[] = [
     description: '邮箱登录与客户端设置',
     fields: [
       text('邮箱地址'),
-      text('密码'),
-      text('客户端授权码'),
+      password('密码'),
+      password('客户端授权码'),
       text('收件服务器（IMAP）'),
       text('发件服务器（SMTP）'),
       text('绑定手机号'),
+      totp('TOTP 密钥'),
     ],
   },
   {
@@ -54,12 +59,13 @@ export const BUILTIN_TEMPLATES: Template[] = [
     fields: [
       text('登录平台'),
       text('账号'),
-      text('密码'),
+      password('密码'),
       text('区服'),
       text('角色名'),
       text('绑定手机'),
       text('实名姓名'),
       text('身份证号'),
+      totp('TOTP 密钥'),
     ],
   },
   {
@@ -72,9 +78,9 @@ export const BUILTIN_TEMPLATES: Template[] = [
       text('卡号'),
       text('户名'),
       text('预留手机号'),
-      text('取款密码', '6 位数字'),
-      text('网银登录密码'),
-      text('支付密码', '6 位数字'),
+      password('取款密码', '6 位数字'),
+      password('网银登录密码'),
+      password('支付密码', '6 位数字'),
     ],
   },
   {
@@ -86,9 +92,9 @@ export const BUILTIN_TEMPLATES: Template[] = [
       text('卡号'),
       text('持卡人'),
       text('有效期', 'MM/YY'),
-      text('安全码 CVV2', '卡背面末三位'),
-      text('查询密码', '6 位数字'),
-      text('交易密码', '6 位数字'),
+      password('安全码 CVV2', '卡背面末三位'),
+      password('查询密码', '6 位数字'),
+      password('交易密码', '6 位数字'),
       text('账单日', '每月 X 日'),
       text('还款日', '每月 X 日'),
       text('预留手机号'),
@@ -101,8 +107,8 @@ export const BUILTIN_TEMPLATES: Template[] = [
     description: '账号、支付密码与实名信息',
     fields: [
       text('支付宝账号'),
-      text('登录密码'),
-      text('支付密码', '6 位数字'),
+      password('登录密码'),
+      password('支付密码', '6 位数字'),
       text('实名姓名'),
       text('身份证号'),
       text('绑定手机号'),
@@ -116,8 +122,8 @@ export const BUILTIN_TEMPLATES: Template[] = [
     fields: [
       text('微信号'),
       text('登录手机号'),
-      text('登录密码'),
-      text('支付密码', '6 位数字'),
+      password('登录密码'),
+      password('支付密码', '6 位数字'),
       text('实名姓名'),
       text('身份证号'),
       text('绑定银行卡'),
@@ -185,12 +191,12 @@ export const BUILTIN_TEMPLATES: Template[] = [
     fields: [
       text('运营商'),
       text('宽带账号'),
-      text('宽带密码'),
+      password('宽带密码'),
       text('光猫管理地址', '如 192.168.1.1'),
       text('光猫管理员账号'),
-      text('光猫管理员密码'),
+      password('光猫管理员密码'),
       text('Wi-Fi 名称'),
-      text('Wi-Fi 密码'),
+      password('Wi-Fi 密码'),
       text('装机地址'),
     ],
   },
@@ -214,7 +220,7 @@ export const BUILTIN_TEMPLATES: Template[] = [
       text('姓名'),
       text('身份证号', '18 位'),
       text('社保卡号 / 医保卡号'),
-      text('社保查询密码'),
+      password('社保查询密码'),
       text('参保地'),
       text('定点医院'),
       text('客服电话'),
@@ -228,7 +234,7 @@ export const BUILTIN_TEMPLATES: Template[] = [
       text('主机地址'),
       text('SSH 端口', '默认 22'),
       text('用户名'),
-      text('密码'),
+      password('密码'),
       text('数据库名'),
       text('备注'),
     ],

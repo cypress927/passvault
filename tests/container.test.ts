@@ -13,7 +13,11 @@ function sampleData(): VaultData {
         id: 'tpl-1',
         name: '自定义模板',
         description: '测试用',
-        fields: [{ key: '账号', kind: 'text', hint: '邮箱或手机号' }],
+        fields: [
+          { key: '账号', kind: 'text', hint: '邮箱或手机号' },
+          { key: '密码', kind: 'password' },
+          { key: 'TOTP 密钥', kind: 'totp' },
+        ],
       },
     ],
     items: [
@@ -25,6 +29,8 @@ function sampleData(): VaultData {
         fields: [
           { key: '用户名', value: { kind: 'text', text: 'admin' } },
           { key: '密码', hint: '默认在机身上', value: { kind: 'text', text: 'p@ssw0rd' } },
+          { key: '登录密码', value: { kind: 'password', text: 'secret' } },
+          { key: 'TOTP 密钥', value: { kind: 'totp', text: 'JBSWY3DPEHPK3PXP' } },
           {
             key: '截图.png',
             value: {

@@ -1,5 +1,7 @@
+export type TextKind = 'text' | 'password' | 'totp'
+
 export interface TextValue {
-  kind: 'text'
+  kind: TextKind
   text: string
 }
 
@@ -13,6 +15,7 @@ export interface FileValue {
 }
 
 export type FieldValue = TextValue | FileValue
+export type FieldKind = FieldValue['kind']
 
 export interface Field {
   key: string
@@ -36,7 +39,7 @@ export interface Folder {
 
 export interface TemplateField {
   key: string
-  kind: 'text' | 'file'
+  kind: FieldKind
   hint?: string
 }
 

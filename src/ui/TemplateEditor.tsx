@@ -25,7 +25,7 @@ export function TemplateEditor({
     )
   }
 
-  const add = (kind: 'text' | 'file') => {
+  const add = (kind: TemplateField['kind']) => {
     setFields((current) => [...current, { key: '', kind }])
   }
 
@@ -102,11 +102,19 @@ export function TemplateEditor({
           <div className="fields-actions">
             <button type="button" className="button small soft" onClick={() => add('text')}>
               <PlusIcon size={14} />
-              文本字段
+              文本
+            </button>
+            <button type="button" className="button small soft" onClick={() => add('password')}>
+              <PlusIcon size={14} />
+              密码
+            </button>
+            <button type="button" className="button small soft" onClick={() => add('totp')}>
+              <PlusIcon size={14} />
+              TOTP
             </button>
             <button type="button" className="button small soft" onClick={() => add('file')}>
               <PlusIcon size={14} />
-              文件字段
+              文件
             </button>
           </div>
         </div>
@@ -128,11 +136,13 @@ export function TemplateEditor({
                 onChange={(event) =>
                   update(index, (current) => ({
                     ...current,
-                    kind: event.target.value === 'file' ? 'file' : 'text',
+                    kind: event.target.value as TemplateField['kind'],
                   }))
                 }
               >
                 <option value="text">文本</option>
+                <option value="password">密码</option>
+                <option value="totp">TOTP</option>
                 <option value="file">文件</option>
               </select>
               <input

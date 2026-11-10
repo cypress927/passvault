@@ -37,8 +37,12 @@ describe('KeePassXC CSV', () => {
       '网址',
       'TOTP 密钥',
     ])
-    expect(first.fields[1].value).toEqual({ kind: 'text', text: 'p@ss,word' })
-    expect(second.fields[1].value).toEqual({ kind: 'text', text: 'pa"ss' })
+    expect(first.fields[1].value).toEqual({ kind: 'password', text: 'p@ss,word' })
+    expect(first.fields[3].value).toEqual({
+      kind: 'totp',
+      text: 'otpauth://totp/x',
+    })
+    expect(second.fields[1].value).toEqual({ kind: 'password', text: 'pa"ss' })
   })
 
   it('skips empty cells instead of creating empty fields', () => {
@@ -70,7 +74,7 @@ describe('KeePass 1.x CSV', () => {
     expect(entry.description).toBe('备注')
     expect(entry.fields[0].value).toEqual({ kind: 'text', text: 'admin' })
     expect(entry.fields[1].value).toEqual({
-      kind: 'text',
+      kind: 'password',
       text: 'p"a' + BACKSLASH + 'ss',
     })
   })

@@ -231,16 +231,16 @@ export function parseKeepassCsv(text: string): ParsedCsvImport {
     const group = cell(row, map.group).trim()
     const fields: Field[] = []
 
-    const addField = (key: string, value: string) => {
+    const addField = (key: string, value: string, kind: 'text' | 'password' | 'totp' = 'text') => {
       if (value !== '') {
-        fields.push({ key, value: { kind: 'text', text: value } })
+        fields.push({ key, value: { kind, text: value } })
       }
     }
 
     addField('用户名', cell(row, map.username))
-    addField('密码', cell(row, map.password))
+    addField('密码', cell(row, map.password), 'password')
     addField('网址', cell(row, map.url))
-    addField('TOTP 密钥', cell(row, map.totp))
+    addField('TOTP 密钥', cell(row, map.totp), 'totp')
     for (const extra of map.extras) {
       addField(extra.name, cell(row, extra.index))
     }

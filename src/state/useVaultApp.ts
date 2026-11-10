@@ -1,7 +1,8 @@
 import { useCallback, useMemo, useState } from 'react'
 import { toBufferSource } from '../crypto/bytes'
 import { randomId } from '../crypto/random'
-import type { Field, FileValue, Folder, Item, Template, VaultData } from '../vault/model'
+import { DEFAULT_PASSWORD_OPTIONS, type PasswordOptions } from '../crypto/password'
+import type { Field, FieldKind, FileValue, Folder, Item, Template, VaultData } from '../vault/model'
 import type { Header } from '../vault/format'
 import type { ParsedCsvImport } from '../vault/keepassCsv'
 import { itemFromTemplate } from '../vault/templates'
@@ -32,6 +33,8 @@ export interface AppApi {
   folders: Folder[]
   activeFolder: FolderFilter
   templates: Template[]
+  passwordOptions: PasswordOptions
+  setPasswordOptions(options: PasswordOptions): void
 
   setError(message: string): void
   dismissError(): void
@@ -52,8 +55,7 @@ export interface AppApi {
   deleteItem(id: string): void
   moveItem(itemId: string, folderId: string | null): void
 
-  addTextField(itemId: string): void
-  addFileField(itemId: string): void
+  addField(itemId: string, kind: FieldKind): void
   updateField(itemId: string, index: number, updater: (field: Field) => Field): void
   removeField(itemId: string, index: number): void
   setFile(itemId: string, index: number, file: File): Promise<void>
@@ -87,7 +89,7 @@ function matchesQuery(item: Item, query: string): boolean {
   if (item.description.toLowerCase().includes(needle)) return true
   return item.fields.some((field) => {
     if (field.key.toLowerCase().includes(needle)) return true
-    if (field.value.kind === 'text') return field.value.text.toLowerCase().includes(needle)
+    if (field.value.kind !== 'file') return field.value.text.toLowerCase().includes(needle)
     return field.value.filename.toLowerCase().includes(needle)
   })
 }
@@ -107,8 +109,12 @@ function downloadBytes(bytes: Uint8Array, filename: string): void {
 const EMPTY_FILE: FileValue = { kind: 'file', blobId: null, filename: '', mime: '', size: 0 }
 
 function cloneField(field: Field): Field {
-  if (field.value.kind === 'text') {
-    return { key: field.key, hint: field.hint, value: { kind: 'text', text: field.value.text } }
+  if (field.value.kind !== 'file') {
+    return {
+      key: field.key,
+      hint: field.hint,
+      value: { kind: field.value.kind, text: field.value.text },
+    }
   }
   return { key: field.key, hint: field.hint, value: { ...field.value } }
 }
@@ -121,6 +127,9 @@ export function useVaultApp(): AppApi {
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [passwordOptions, setPasswordOptions] = useState<PasswordOptions>(
+    DEFAULT_PASSWORD_OPTIONS,
+  )
 
   const create = useCallback(async (password: string) => {
     setBusy('正在生成密钥…')
@@ -256,21 +265,17 @@ export function useVaultApp(): AppApi {
     [updateItem],
   )
 
-  const addTextField = useCallback(
-    (itemId: string) => {
+  const addField = useCallback(
+    (itemId: string, kind: FieldKind) => {
       updateItem(itemId, (item) => ({
         ...item,
-        fields: [...item.fields, { key: '', value: { kind: 'text', text: '' } }],
-      }))
-    },
-    [updateItem],
-  )
-
-  const addFileField = useCallback(
-    (itemId: string) => {
-      updateItem(itemId, (item) => ({
-        ...item,
-        fields: [...item.fields, { key: '', value: { ...EMPTY_FILE } }],
+        fields: [
+          ...item.fields,
+          {
+            key: '',
+            value: kind === 'file' ? { ...EMPTY_FILE } : { kind, text: '' },
+          },
+        ],
       }))
     },
     [updateItem],
@@ -532,6 +537,8 @@ export function useVaultApp(): AppApi {
     folders,
     activeFolder,
     templates,
+    passwordOptions,
+    setPasswordOptions,
     setError,
     dismissError: () => setError(null),
     showNotice,
@@ -547,8 +554,7 @@ export function useVaultApp(): AppApi {
     updateItem,
     deleteItem,
     moveItem,
-    addTextField,
-    addFileField,
+    addField,
     updateField,
     removeField,
     setFile,

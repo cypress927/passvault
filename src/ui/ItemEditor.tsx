@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toBufferSource } from '../crypto/bytes'
 import type { AppApi } from '../state/useVaultApp'
 import type { FileValue, Item } from '../vault/model'
@@ -7,6 +7,19 @@ import { FolderIcon, ImageIcon, PlusIcon, TrashIcon, XIcon } from './icons'
 
 export function ItemEditor({ app, item }: { app: AppApi; item: Item }) {
   const [preview, setPreview] = useState<{ url: string; filename: string } | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const handlePointerDown = (event: PointerEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('pointerdown', handlePointerDown)
+    return () => document.removeEventListener('pointerdown', handlePointerDown)
+  }, [menuOpen])
 
   const openPreview = (value: FileValue) => {
     const bytes = app.getBlob(value.blobId)
@@ -91,14 +104,55 @@ export function ItemEditor({ app, item }: { app: AppApi; item: Item }) {
           <span className="count-chip">{item.fields.length}</span>
         </div>
         <div className="fields-actions">
-          <button className="button small soft" onClick={() => app.addTextField(item.id)}>
-            <PlusIcon size={14} />
-            添加文本字段
-          </button>
-          <button className="button small soft" onClick={() => app.addFileField(item.id)}>
-            <PlusIcon size={14} />
-            添加文件字段
-          </button>
+          <div className="field-add" ref={menuRef}>
+            <button
+              className="button small soft"
+              onClick={() => setMenuOpen((current) => !current)}
+            >
+              <PlusIcon size={14} />
+              添加字段
+            </button>
+            {menuOpen && (
+              <div className="field-menu">
+                <button
+                  type="button"
+                  onClick={() => {
+                    app.addField(item.id, 'text')
+                    setMenuOpen(false)
+                  }}
+                >
+                  文本
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    app.addField(item.id, 'password')
+                    setMenuOpen(false)
+                  }}
+                >
+                  密码
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    app.addField(item.id, 'totp')
+                    setMenuOpen(false)
+                  }}
+                >
+                  TOTP
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    app.addField(item.id, 'file')
+                    setMenuOpen(false)
+                  }}
+                >
+                  文件
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -115,7 +169,7 @@ export function ItemEditor({ app, item }: { app: AppApi; item: Item }) {
           />
         ))}
         {item.fields.length === 0 && (
-          <p className="empty-fields">还没有字段。添加文本字段或文件字段。</p>
+          <p className="empty-fields">还没有字段。用「添加字段」选择文本、密码、TOTP 或文件。</p>
         )}
       </div>
 

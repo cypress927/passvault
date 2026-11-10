@@ -21,7 +21,8 @@ describe('vault round-trip', () => {
       folderId: 'folder-1',
       fields: [
         { key: '账号', value: { kind: 'text', text: 'me@example.com' } },
-        { key: '密码', value: { kind: 'text', text: 'hunter2' } },
+        { key: '密码', value: { kind: 'password', text: 'hunter2' } },
+        { key: 'TOTP 密钥', value: { kind: 'totp', text: 'JBSWY3DPEHPK3PXP' } },
         {
           key: 'avatar.png',
           value: {
