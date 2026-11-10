@@ -27,6 +27,7 @@
 - **移动端**：`≤760px` 单栏主从切换（列表 ↔ 编辑 + 返回按钮）；顶栏图标按钮；触控目标约 40px；触屏上文件夹操作常显。
 - **界面**：浅色/深色模式、内联 SVG 图标、模板选择/管理弹窗、CSV 导入预览、成功/错误提示。
 - **单文件构建**：`npm run build:single` → `dist-single/passmgmt.html`；JS/CSS/WASM/Worker 全内联；已从 `file://` 实测创建/导出/重新导入。
+- **PWA 构建**：`npm run build:pwa` → `dist-pwa/`；manifest、PNG 图标、Service Worker、离线缓存；已实测注册、缓存、断网重载、断网创建库。
 
 ## 当前验证
 
@@ -35,6 +36,7 @@
 - Playwright + Edge：
   - 桌面：模板、密码生成、TOTP、图片预览、KeePass CSV 导入、导出 → 锁定 → 导入还原；控制台 0 错误。
   - 单文件 `file://`：创建库、内联 Worker、TOTP、密码生成、导出、重新导入；控制台 0 错误。
+  - PWA：Service Worker ready、缓存 11 个资源、页面受控、断网重载、断网创建库；控制台 0 错误。
   - 移动 390×844：无横向溢出；列表 ↔ 编辑切换、返回按钮、触控尺寸；控制台 0 错误。
 
 ## 运行
@@ -45,6 +47,7 @@ npm run dev      # 默认 http://localhost:5173
 npm test
 npm run build
 npm run build:single   # dist-single/passmgmt.html
+npm run build:pwa      # dist-pwa/
 npm run preview
 ```
 
@@ -74,7 +77,7 @@ npm run preview
 ## 尚未完成 / 后续
 
 1. **推送远程仓库**：等待用户提供地址。
-2. **PWA / iOS**：manifest、service worker、图标、离线缓存；在真实 iPhone Safari 上验证「添加到主屏幕」、导入/导出、TOTP。单文件 HTML 在 iOS 上只能尝试通过 Files/Safari 打开，可靠性不保证。
+2. **iOS 真机验证**：PWA 构建已完成；下一步在真实 iPhone Safari 上验证「添加到主屏幕」、导入/导出、TOTP。单文件 HTML 在 iOS 上只能尝试通过 Files/Safari 打开，可靠性不保证。
 3. **Bitwarden JSON 导入**：已调研格式（8 种条目类型、Passkey、加密导出检测），用户暂缓。
 4. **未支持的导入**：KeePass `.kdbx` / XML、Bitwarden `.zip` 附件、KeePass CSV 附件。
 5. **导入查重**：未实现；如需要按来源 ID 去重，需要给条目增加隐藏的来源 ID。

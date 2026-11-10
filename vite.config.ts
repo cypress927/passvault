@@ -27,6 +27,7 @@ const SINGLE_CSP = [
 
 export default defineConfig(({ command, mode }) => {
   const single = mode === 'single'
+  const pwa = mode === 'pwa'
   const csp = single ? SINGLE_CSP : STRICT_CSP
 
   return {
@@ -56,6 +57,11 @@ export default defineConfig(({ command, mode }) => {
             },
           },
         }
-      : undefined,
+      : pwa
+        ? {
+            outDir: 'dist-pwa',
+            emptyOutDir: true,
+          }
+        : undefined,
   }
 })

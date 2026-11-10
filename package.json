@@ -8,7 +8,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "build:single": "vite build --mode single && node scripts/build-single.mjs"
+    "build:single": "vite build --mode single && node scripts/build-single.mjs",
+    "build:pwa": "vite build --mode pwa && node scripts/build-pwa.mjs"
   },
   "dependencies": {
     "hash-wasm": "^4.13.0",

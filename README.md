@@ -18,6 +18,7 @@ npm run dev           # 开发：http://localhost:5173
 npm test              # 单元测试
 npm run build         # 普通静态构建，产物在 dist/
 npm run build:single  # 单文件构建，产物是 dist-single/passmgmt.html
+npm run build:pwa     # PWA 构建，产物是 dist-pwa/
 ```
 
 ## 单文件版本
@@ -33,6 +34,20 @@ dist-single/passmgmt.html
 已在 Edge 的 `file://` 下验证：创建库、内联 Argon2 Worker、TOTP、密码生成、导出、锁定后重新导入均正常，控制台 0 错误。
 
 iOS 上本地 HTML 的行为取决于系统版本和打开方式，不能保证 WebCrypto、Worker、文件保存都可用。如果要在 iPhone 上稳定使用，建议用 PWA（HTTPS 静态托管 + 添加到主屏）；单文件版可以先生成出来在手机上试。
+
+## PWA 版本
+
+```bash
+npm run build:pwa
+```
+
+产物是 `dist-pwa/` 静态目录，把它部署到任意 HTTPS 静态托管（Cloudflare Pages、Netlify、GitHub Pages、自己的服务器等）的站点根目录，然后在 iPhone Safari 里打开 → 分享 → **添加到主屏幕**。
+
+- 首次加载后 Service Worker 会缓存全部应用资源，断网也能打开。
+- 数据仍然只在设备上；托管服务器只下发程序文件，不接触 `.vault`。
+- `start_url` / `scope` 是 `/`，需要部署在站点根目录；如果部署在子路径，需要同时调整 Vite `base` 和 manifest 路径。
+- 单文件版用于桌面本地双击；PWA 版用于 iOS 主屏和离线。
+- iOS Safari 没有 File System Access API，保存仍然是一次新的下载。
 
 ## 使用
 
