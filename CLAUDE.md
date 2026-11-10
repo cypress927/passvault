@@ -38,6 +38,7 @@ passmgmt：本地优先的加密资源库网页应用。数据存成单个 `.vau
 - 图片缩略图直接预览；其他附件下载/更换/清除。
 - KeePassXC / KeePass 1.x CSV 导入（含预览、错误提示）。
 - 移动端 `≤760px` 单栏主从切换（列表 ↔ 编辑 + 返回按钮）。
+- 单文件构建：`npm run build:single` 产出 `dist-single/passmgmt.html`，JS/CSS/WASM/Worker 全内联；已在 Edge `file://` 下通过创建/导出/导入 E2E。
 - 60 个单元测试、`tsc`、构建、桌面/移动 Playwright E2E 均通过。
 
 详细清单、验证结果和限制见 `PROGRESS.md`。
@@ -50,6 +51,7 @@ npm run dev        # 默认 http://localhost:5173
 npx tsc --noEmit
 npm test           # 60 tests
 npm run build
+npm run build:single  # dist-single/passmgmt.html（单文件）
 ```
 
 必须通过 `http://` 或 `https://` 访问；不能直接双击 `dist/index.html`（`file://` 下 WebCrypto 不可用）。
@@ -84,7 +86,7 @@ npm run build
 ## 下一步（按优先级）
 
 1. **远程仓库**：等待用户提供地址后 `git remote add origin <url> && git push -u origin main`。本机没有 `gh` CLI。
-2. **PWA / iOS**：manifest、service worker、图标、离线缓存；在真实 iPhone Safari 验证「添加到主屏幕」、导入/导出、TOTP。iOS Safari 没有 File System Access API，保存是新下载。
+2. **PWA / iOS**：manifest、service worker、图标、离线缓存；在真实 iPhone Safari 验证「添加到主屏幕」、导入/导出、TOTP。iOS Safari 没有 File System Access API，保存是新下载。单文件 HTML 在 iOS 上只能尝试通过 Files/Safari 打开，可靠性不保证；PWA 是稳定路线。
 3. **Bitwarden 未加密 JSON 导入**：格式已调研（8 种条目类型、Passkey、加密导出检测），用户此前暂缓；要做时先确认范围。
 4. **未支持的导入**：KeePass `.kdbx` / XML、Bitwarden `.zip` 附件。
 5. **导入查重**：未实现；如需要按来源 ID 去重，需要给条目增加隐藏来源 ID。
@@ -98,6 +100,7 @@ npm run build
 - **CSP**：生产 CSP 在 `vite.config.ts` 的 `inject-csp` 插件里只在 build 注入；需要 `script-src 'self' 'wasm-unsafe-eval'` 和 `connect-src 'none'`。
 - **WebCrypto 类型**：字节数组传给 WebCrypto/Blob 时用 `src/crypto/bytes.ts` 的 `toBufferSource`，避免 TypeScript 的 `ArrayBufferLike` 报错。
 - **测试数据**：E2E 脚本此前在仓库外临时目录运行，未提交；仓库内的自动化验证是 `npm test` + 手动冒烟清单。
+- **单文件构建**：`scripts/build-single.mjs` 负责把 Vite 产物内联成 `passmgmt.html`；Worker 通过 `?worker&inline` 内联。单文件版 CSP 允许 `'unsafe-inline'`，普通/PWA 构建仍用严格 CSP。
 
 ## Git
 

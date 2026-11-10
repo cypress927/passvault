@@ -8,9 +8,10 @@ interface KdfResponse {
 
 /**
  * Runs Argon2id off the main thread so unlocking doesn't freeze the UI.
- * Tests and non-browser environments run it inline; the browser always uses the Worker.
+ * Tests and non-browser environments run it inline; the browser uses the
+ * inline Worker, which keeps the single-file build self-contained.
  */
-export function deriveKekInWorker(
+export async function deriveKekInWorker(
   password: string,
   salt: Uint8Array,
   params: KdfParams,
@@ -19,8 +20,10 @@ export function deriveKekInWorker(
     return deriveKek(password, salt, params)
   }
 
+  const { default: Argon2Worker } = await import('./argon2.worker?worker&inline')
+
   return new Promise((resolve, reject) => {
-    const worker = new Worker(new URL('./argon2.worker.ts', import.meta.url), { type: 'module' })
+    const worker = new Argon2Worker()
     worker.onmessage = (event: MessageEvent<KdfResponse>) => {
       worker.terminate()
       const data = event.data

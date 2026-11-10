@@ -14,10 +14,25 @@
 
 ```bash
 npm install
-npm run dev      # 开发：http://localhost:5173
-npm test         # 单元测试
-npm run build    # 生产构建，产物在 dist/
+npm run dev           # 开发：http://localhost:5173
+npm test              # 单元测试
+npm run build         # 普通静态构建，产物在 dist/
+npm run build:single  # 单文件构建，产物是 dist-single/passmgmt.html
 ```
+
+## 单文件版本
+
+`npm run build:single` 会把 JS、CSS、hash-wasm 的 WASM、Argon2 Worker 全部内联成一个 HTML：
+
+```
+dist-single/passmgmt.html
+```
+
+约 370 KB，双击即可在桌面浏览器打开，不需要服务器。数据仍然是单独的 `.vault` 文件，通过选择文件导入、下载导出。
+
+已在 Edge 的 `file://` 下验证：创建库、内联 Argon2 Worker、TOTP、密码生成、导出、锁定后重新导入均正常，控制台 0 错误。
+
+iOS 上本地 HTML 的行为取决于系统版本和打开方式，不能保证 WebCrypto、Worker、文件保存都可用。如果要在 iPhone 上稳定使用，建议用 PWA（HTTPS 静态托管 + 添加到主屏）；单文件版可以先生成出来在手机上试。
 
 ## 使用
 
