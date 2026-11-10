@@ -28,6 +28,9 @@ jobs:
       - run: npm test
       - run: npm run build:pwa
       - uses: actions/configure-pages@v5
+        with:
+          # 公开仓库下首次运行会自动启用 Pages；私有仓库需要套餐支持，否则请先手动开启
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist-pwa

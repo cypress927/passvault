@@ -55,6 +55,11 @@ npm run build:pwa
 
 1. 在 GitHub 创建仓库，把本地 `main` 推上去。
 2. 仓库 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**。
+
+   如果工作流报 `Get Pages site failed`，说明 Pages 还没有启用：先完成这一步，然后重跑工作流。工作流里的 `configure-pages` 也带了 `enablement: true`，公开仓库下会尝试自动启用。
+
+   如果 Settings 里没有 Pages 或提示不可用，通常是因为仓库是私有且套餐不支持。免费账号请把仓库设为 **public**（仓库只含代码，`*.vault` 不会入库），或升级套餐；也可以改用 Cloudflare Pages（免费版支持私有仓库）。
+
 3. 之后每次 push 到 `main`，或手动运行 **Deploy PWA to GitHub Pages** 工作流，都会构建并发布。
 4. 项目站点地址：`https://<user>.github.io/<repo>/`；如果仓库名是 `<user>.github.io`，地址是 `https://<user>.github.io/`。
 5. iPhone Safari 打开该地址 → 分享 → **添加到主屏幕**。

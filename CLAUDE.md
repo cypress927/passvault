@@ -84,7 +84,7 @@ npm run build:pwa     # dist-pwa/（PWA 静态目录）
 - `src/state/useVaultApp.ts`：会话、条目、文件夹、模板、CSV 导入、密码选项、通知。
 - `src/ui/`：`Welcome`、`Workspace`、`ItemEditor`、`FieldRow`、`TemplatePicker/Manager/Editor`、`CsvImportDialog`、`PasswordGeneratorDialog`、`TotpCode`、`PromptDialog`、`icons`。
 - `pwa/`：manifest、Service Worker 模板、注册脚本、PNG 图标。
-- `.github/workflows/deploy-pages.yml`：GitHub Pages 构建与发布工作流。
+- `.github/workflows/deploy-pages.yml`：GitHub Pages 构建与发布工作流；`configure-pages` 带 `enablement: true`。若报 `Get Pages site failed`，先在 Settings → Pages 把 Source 设为 GitHub Actions；私有仓库需要套餐支持，否则改为 public 或换 Cloudflare Pages。
 - `scripts/build-single.mjs` / `scripts/build-pwa.mjs`：单文件和 PWA 的后处理脚本。
 - `tests/`：Vitest 单元测试。
 
