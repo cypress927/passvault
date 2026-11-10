@@ -24,6 +24,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npx tsc --noEmit
       - run: npm test
       - run: npm run build:pwa
       - uses: actions/configure-pages@v5

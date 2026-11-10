@@ -51,7 +51,7 @@ npm run build:pwa
 
 ### 部署到 GitHub Pages
 
-仓库里已经包含 `.github/workflows/deploy-pages.yml`，流程是 `npm ci` → `npm test` → `npm run build:pwa` → 发布 `dist-pwa/`。
+仓库里已经包含 `.github/workflows/deploy-pages.yml`，流程是 `npm ci` → `npx tsc --noEmit` → `npm test` → `npm run build:pwa` → 发布 `dist-pwa/`。
 
 1. 在 GitHub 创建仓库，把本地 `main` 推上去。
 2. 仓库 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**。
