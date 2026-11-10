@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { AppApi } from '../state/useVaultApp'
 import { CsvImportDialog } from './CsvImportDialog'
 import { ItemEditor } from './ItemEditor'
@@ -12,6 +12,7 @@ import {
   FolderIcon,
   LockIcon,
   LogoMark,
+  MenuIcon,
   PlusIcon,
   SearchIcon,
   ShieldIcon,
@@ -27,7 +28,12 @@ export function Workspace({ app }: { app: AppApi }) {
   const [pickerOpen, setPickerOpen] = useState(false)
   const [folderDialog, setFolderDialog] = useState<FolderDialog | null>(null)
   const [csvOpen, setCsvOpen] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(false)
   const ungroupedCount = app.items.filter((item) => item.folderId === null).length
+
+  useEffect(() => {
+    if (!app.selectedItem) setDrawerOpen(false)
+  }, [app.selectedItem])
 
   return (
     <div className="workspace">
@@ -79,7 +85,7 @@ export function Workspace({ app }: { app: AppApi }) {
         </div>
       </header>
 
-      <div className={`workspace-body${app.selectedItem ? ' editing' : ''}`}>
+      <div className={`workspace-body${app.selectedItem ? ' editing' : ''}${drawerOpen ? ' drawer-open' : ''}`}>
         <aside className="sidebar">
           <div className="sidebar-head">
             <div className="search-box">
@@ -91,7 +97,13 @@ export function Workspace({ app }: { app: AppApi }) {
                 onChange={(event) => app.setQuery(event.target.value)}
               />
             </div>
-            <button className="button primary block" onClick={() => setPickerOpen(true)}>
+            <button
+              className="button primary block"
+              onClick={() => {
+                setPickerOpen(true)
+                setDrawerOpen(false)
+              }}
+            >
               <PlusIcon size={16} />
               新建条目
             </button>
@@ -169,7 +181,10 @@ export function Workspace({ app }: { app: AppApi }) {
               <li key={item.id}>
                 <button
                   className={`item-link${item.id === app.selectedId ? ' selected' : ''}`}
-                  onClick={() => app.select(item.id)}
+                  onClick={() => {
+                    app.select(item.id)
+                    setDrawerOpen(false)
+                  }}
                   aria-current={item.id === app.selectedId}
                 >
                   <span className="item-name">{item.name || '未命名条目'}</span>
@@ -198,9 +213,19 @@ export function Workspace({ app }: { app: AppApi }) {
           {app.selectedItem ? (
             <>
               <div className="mobile-editor-bar">
-                <button className="button ghost" onClick={() => app.select(null)}>
+                <button className="button ghost" onClick={() => setDrawerOpen(true)}>
+                  <MenuIcon size={18} />
+                  列表
+                </button>
+                <button
+                  className="button ghost"
+                  onClick={() => {
+                    app.select(null)
+                    setDrawerOpen(false)
+                  }}
+                >
                   <ChevronLeftIcon size={18} />
-                  返回列表
+                  返回
                 </button>
               </div>
               <ItemEditor app={app} item={app.selectedItem} />
@@ -215,6 +240,8 @@ export function Workspace({ app }: { app: AppApi }) {
             </div>
           )}
         </main>
+
+        <div className="drawer-backdrop" onClick={() => setDrawerOpen(false)} />
       </div>
 
       {pickerOpen && <TemplatePicker app={app} onClose={() => setPickerOpen(false)} />}

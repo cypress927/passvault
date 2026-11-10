@@ -37,7 +37,7 @@ passmgmt：本地优先的加密资源库网页应用。数据存成单个 `.vau
 - TOTP 实时验证码（裸 Base32 / `otpauth://` URI，SHA1/256/512，6/8 位）。
 - 图片缩略图直接预览；其他附件下载/更换/清除。
 - KeePassXC / KeePass 1.x CSV 导入（含预览、错误提示）。
-- 移动端 `≤760px` 单栏主从切换（列表 ↔ 编辑 + 返回按钮）。
+- 移动端 `≤760px` 列表全屏；编辑时左侧抽屉切换条目/文件夹，遮罩或「返回」回列表；顶部用 safe-area 实色条避免 iOS 主屏状态栏模糊。
 - 单文件构建：`npm run build:single` 产出 `dist-single/passmgmt.html`，JS/CSS/WASM/Worker 全内联；已在 Edge `file://` 下通过创建/导出/导入 E2E。
 - PWA 构建：`npm run build:pwa` 产出 `dist-pwa/`（manifest、图标、Service Worker）；已实测 Service Worker 注册、缓存全部资源、断网重载、断网创建库。
 - 60 个单元测试、`tsc`、构建、桌面/移动 Playwright E2E 均通过。
@@ -106,7 +106,8 @@ npm run build:pwa     # dist-pwa/（PWA 静态目录）
 - **WebCrypto 类型**：字节数组传给 WebCrypto/Blob 时用 `src/crypto/bytes.ts` 的 `toBufferSource`，避免 TypeScript 的 `ArrayBufferLike` 报错。
 - **测试数据**：E2E 脚本此前在仓库外临时目录运行，未提交；仓库内的自动化验证是 `npm test` + 手动冒烟清单。
 - **单文件构建**：`scripts/build-single.mjs` 负责把 Vite 产物内联成 `passmgmt.html`；Worker 通过 `?worker&inline` 内联。单文件版 CSP 允许 `'unsafe-inline'`，普通/PWA 构建仍用严格 CSP。
-- **PWA 构建**：`pwa/sw.js` 是简单的 cache-first Service Worker，构建时把资源清单和构建时间写入；`manifest.json`、`register-sw.js`、SW 缓存都使用相对路径，因此可部署在站点根目录或任意子路径（GitHub Pages 项目站点）。
+- **iOS 顶部安全区**：`index.html` 使用 `viewport-fit=cover`；`.app` 用 `env(safe-area-inset-top)` 留白，`.app::before` 画实色条；修改时不要移除，否则 PWA 状态栏会透出内容并出现模糊。
+- **PWA 构建**：`pwa/sw.js` 是简单的 cache-first Service Worker，构建时把资源清单和构建时间写入；`manifest.json`、`register-sw.js`、SW 缓存都使用相对路径，因此可部署在站点根目录或任意子路径（GitHub Pages 项目站点）。PWA 的 `theme-color` 按浅色/深色分别注入。
 
 ## Git
 

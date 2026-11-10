@@ -55,7 +55,8 @@ const head = `
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="passmgmt" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="theme-color" content="#4f6bed" />`
+  <meta name="theme-color" content="#f6f7f9" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0e1116" media="(prefers-color-scheme: dark)" />`
 
 html = html.replace('</head>', `${head}\n</head>`)
 html = html.replace('</body>', '  <script src="register-sw.js" defer></script>\n</body>')

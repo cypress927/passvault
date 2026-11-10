@@ -24,8 +24,8 @@
 - **附件**：图片显示缩略图，点击直接预览；其他文件下载/更换/清除；文件字段始终允许为空。
 - **导入 CSV**：支持 KeePassXC CSV 与 KeePass 1.x/2.x CSV；解析双引号与反斜杠转义、BOM、CRLF、多行字段；`Group` → 文件夹，`Notes/Comments` → 描述，`Password` / `TOTP` 自动带字段类型；导入前有预览。
 - **导出/导入 `.vault`**：重新加密导出；导入解密；未导出状态显式显示。
-- **移动端**：`≤760px` 单栏主从切换（列表 ↔ 编辑 + 返回按钮）；顶栏图标按钮；触控目标约 40px；触屏上文件夹操作常显。
-- **界面**：浅色/深色模式、内联 SVG 图标、模板选择/管理弹窗、CSV 导入预览、成功/错误提示。
+- **移动端**：`≤760px` 列表全屏；编辑时左侧抽屉切换条目/文件夹；顶栏图标按钮；触控目标约 40px；触屏上文件夹操作常显；顶部 safe-area 实色条避免 iOS 主屏状态栏模糊。
+- **界面**：浅色/深色模式、内联 SVG 图标、模板选择/管理弹窗、CSV 导入预览、成功/错误提示；欢迎页精简为品牌 + 表单 + 密码丢失警示。
 - **单文件构建**：`npm run build:single` → `dist-single/passmgmt.html`；JS/CSS/WASM/Worker 全内联；已从 `file://` 实测创建/导出/重新导入。
 - **PWA 构建**：`npm run build:pwa` → `dist-pwa/`；manifest、PNG 图标、Service Worker、离线缓存；相对路径，已实测根路径和 `/passmgmt/` 子路径下的注册、缓存、断网重载、断网创建库。
 - **GitHub Pages**：`.github/workflows/deploy-pages.yml` 自动构建并发布 `dist-pwa/`。

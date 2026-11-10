@@ -1,14 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import type { AppApi } from '../state/useVaultApp'
 import { formatSize } from './FieldRow'
-import {
-  DownloadIcon,
-  FileIcon,
-  LogoMark,
-  PlusIcon,
-  ShieldIcon,
-  UploadIcon,
-} from './icons'
+import { LogoMark, PlusIcon, UploadIcon } from './icons'
 
 export function Welcome({ app }: { app: AppApi }) {
   const [mode, setMode] = useState<'create' | 'import'>('create')
@@ -16,55 +9,13 @@ export function Welcome({ app }: { app: AppApi }) {
   return (
     <div className="welcome">
       <div className="welcome-inner">
-        <section className="hero">
-          <div className="hero-brand">
-            <LogoMark size={44} />
-            <span className="hero-brand-name">passmgmt</span>
+        <div className="welcome-brand">
+          <LogoMark size={40} />
+          <div>
+            <h1>passmgmt</h1>
+            <p>本地加密资源库</p>
           </div>
-          <h1 className="hero-title">
-            一个文件，
-            <br />
-            装下所有需要保密的东西。
-          </h1>
-          <p className="hero-sub">
-            文本、照片、文件，作为条目集中加密保存。打开、修改、导出，全程只在你的设备上完成。
-          </p>
-
-          <ul className="feature-list">
-            <li>
-              <span className="feature-icon">
-                <FileIcon size={17} />
-              </span>
-              <div>
-                <strong>统一存放</strong>
-                <span>任意字段的值可以是字符串，也可以是附件</span>
-              </div>
-            </li>
-            <li>
-              <span className="feature-icon">
-                <ShieldIcon size={17} />
-              </span>
-              <div>
-                <strong>本地加密</strong>
-                <span>Argon2id + AES-256-GCM，没有后端，没有同步</span>
-              </div>
-            </li>
-            <li>
-              <span className="feature-icon">
-                <DownloadIcon size={17} />
-              </span>
-              <div>
-                <strong>自己保管</strong>
-                <span>导出为新的 .vault 文件，放在你想放的地方</span>
-              </div>
-            </li>
-          </ul>
-
-          <p className="hero-note">
-            <span className="note-dot" />
-            没有恢复机制：密码丢失，数据就无法再打开。
-          </p>
-        </section>
+        </div>
 
         <section className="auth-panel">
           <div className="segmented" role="tablist" aria-label="打开方式">
@@ -92,7 +43,10 @@ export function Welcome({ app }: { app: AppApi }) {
 
           {mode === 'create' ? <CreateForm app={app} /> : <ImportForm app={app} />}
 
-          <p className="auth-foot">密码不会被保存，也不会离开这台设备。</p>
+          <p className="auth-foot warning">
+            <span className="note-dot" />
+            密码丢失后数据无法恢复
+          </p>
         </section>
       </div>
     </div>
@@ -122,7 +76,6 @@ function CreateForm({ app }: { app: AppApi }) {
     <form className="auth-form" onSubmit={submit}>
       <div className="auth-form-head">
         <h2>新建一个库</h2>
-        <p>从空白开始。设置密码后即可添加条目。</p>
       </div>
       <label className="field-label">
         密码
@@ -177,7 +130,6 @@ function ImportForm({ app }: { app: AppApi }) {
     <form className="auth-form" onSubmit={submit}>
       <div className="auth-form-head">
         <h2>打开已有的库</h2>
-        <p>选择一个加密文件，输入密码后在内存中解密。</p>
       </div>
       <label className="file-picker">
         <input
