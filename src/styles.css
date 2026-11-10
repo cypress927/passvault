@@ -2121,6 +2121,18 @@ textarea.editor-description:focus {
   .workspace-body.editing .editor-pane {
     display: block;
     flex: 1;
+    animation: editor-in 0.18s ease-out;
+  }
+
+  @keyframes editor-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
   }
 
   .sidebar {
@@ -2142,11 +2154,14 @@ textarea.editor-description:focus {
     max-height: none;
     z-index: 60;
     transform: translateX(-100%);
-    transition: transform 0.22s ease;
     border-right: 1px solid var(--border);
     border-bottom: none;
     box-shadow: var(--shadow-lg);
     padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .workspace-body.editing.drawer-animate .sidebar {
+    transition: transform 0.22s ease;
   }
 
   .workspace-body.editing.drawer-open .sidebar {
@@ -2155,6 +2170,7 @@ textarea.editor-description:focus {
 
   .workspace-body.editing.drawer-open .drawer-backdrop {
     display: block;
+    animation: fade-in 0.16s ease-out;
   }
 
   .sidebar-head {

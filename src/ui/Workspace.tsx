@@ -29,10 +29,14 @@ export function Workspace({ app }: { app: AppApi }) {
   const [folderDialog, setFolderDialog] = useState<FolderDialog | null>(null)
   const [csvOpen, setCsvOpen] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [drawerAnimate, setDrawerAnimate] = useState(false)
   const ungroupedCount = app.items.filter((item) => item.folderId === null).length
 
   useEffect(() => {
-    if (!app.selectedItem) setDrawerOpen(false)
+    if (!app.selectedItem) {
+      setDrawerOpen(false)
+      setDrawerAnimate(false)
+    }
   }, [app.selectedItem])
 
   return (
@@ -85,7 +89,7 @@ export function Workspace({ app }: { app: AppApi }) {
         </div>
       </header>
 
-      <div className={`workspace-body${app.selectedItem ? ' editing' : ''}${drawerOpen ? ' drawer-open' : ''}`}>
+      <div className={`workspace-body${app.selectedItem ? ' editing' : ''}${drawerOpen ? ' drawer-open' : ''}${drawerAnimate ? ' drawer-animate' : ''}`}>
         <aside className="sidebar">
           <div className="sidebar-head">
             <div className="search-box">
@@ -213,7 +217,13 @@ export function Workspace({ app }: { app: AppApi }) {
           {app.selectedItem ? (
             <>
               <div className="mobile-editor-bar">
-                <button className="button ghost" onClick={() => setDrawerOpen(true)}>
+                <button
+                  className="button ghost"
+                  onClick={() => {
+                    setDrawerAnimate(true)
+                    setDrawerOpen(true)
+                  }}
+                >
                   <MenuIcon size={18} />
                   列表
                 </button>
@@ -222,6 +232,7 @@ export function Workspace({ app }: { app: AppApi }) {
                   onClick={() => {
                     app.select(null)
                     setDrawerOpen(false)
+                    setDrawerAnimate(false)
                   }}
                 >
                   <ChevronLeftIcon size={18} />
