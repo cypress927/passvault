@@ -179,3 +179,11 @@ export function EyeOffIcon(props: IconProps) {
     </Svg>
   )
 }
+
+export function ChevronLeftIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="m14 6-6 6 6 6" />
+    </Svg>
+  )
+}

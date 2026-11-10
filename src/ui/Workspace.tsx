@@ -5,6 +5,7 @@ import { ItemEditor } from './ItemEditor'
 import { PromptDialog } from './PromptDialog'
 import { TemplatePicker } from './TemplatePicker'
 import {
+  ChevronLeftIcon,
   DownloadIcon,
   EditIcon,
   FileIcon,
@@ -33,7 +34,7 @@ export function Workspace({ app }: { app: AppApi }) {
       <header className="toolbar">
         <div className="toolbar-brand">
           <LogoMark size={28} />
-          <span>passmgmt</span>
+          <span className="toolbar-brand-name">passmgmt</span>
         </div>
         <span className="toolbar-divider" />
         <div className="toolbar-file">
@@ -47,28 +48,38 @@ export function Workspace({ app }: { app: AppApi }) {
         <div className="toolbar-actions">
           <button
             className="button"
+            aria-label="导入 CSV"
+            title="导入 CSV"
             onClick={() => setCsvOpen(true)}
             disabled={app.busy !== null}
           >
             <UploadIcon size={16} />
-            导入 CSV
+            <span className="button-label">导入 CSV</span>
           </button>
           <button
             className="button primary"
+            aria-label="导出"
+            title="导出"
             onClick={() => void app.exportCurrent()}
             disabled={app.busy !== null}
           >
             <DownloadIcon size={16} />
-            导出
+            <span className="button-label">导出</span>
           </button>
-          <button className="button ghost" onClick={app.lock} disabled={app.busy !== null}>
+          <button
+            className="button ghost"
+            aria-label="锁定"
+            title="锁定"
+            onClick={app.lock}
+            disabled={app.busy !== null}
+          >
             <LockIcon size={16} />
-            锁定
+            <span className="button-label">锁定</span>
           </button>
         </div>
       </header>
 
-      <div className="workspace-body">
+      <div className={`workspace-body${app.selectedItem ? ' editing' : ''}`}>
         <aside className="sidebar">
           <div className="sidebar-head">
             <div className="search-box">
@@ -185,7 +196,15 @@ export function Workspace({ app }: { app: AppApi }) {
 
         <main className="editor-pane">
           {app.selectedItem ? (
-            <ItemEditor app={app} item={app.selectedItem} />
+            <>
+              <div className="mobile-editor-bar">
+                <button className="button ghost" onClick={() => app.select(null)}>
+                  <ChevronLeftIcon size={18} />
+                  返回列表
+                </button>
+              </div>
+              <ItemEditor app={app} item={app.selectedItem} />
+            </>
           ) : (
             <div className="placeholder">
               <span className="placeholder-icon">
