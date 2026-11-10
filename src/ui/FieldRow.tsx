@@ -1,6 +1,14 @@
+import { useRef } from 'react'
 import type { AppApi } from '../state/useVaultApp'
 import type { Field, FileValue } from '../vault/model'
-import { DownloadIcon, EyeIcon, FileIcon, ImageIcon, XIcon } from './icons'
+import {
+  DownloadIcon,
+  EyeIcon,
+  FileIcon,
+  ImageIcon,
+  PlusIcon,
+  XIcon,
+} from './icons'
 
 interface FieldRowProps {
   app: AppApi
@@ -31,7 +39,7 @@ export function FieldRow({ app, itemId, index, field, onPreview, onDownload }: F
             className="field-text"
             rows={1}
             value={field.value.text}
-            placeholder="值"
+            placeholder={field.hint || '值'}
             onChange={(event) =>
               update((current) =>
                 current.value.kind === 'text'
@@ -41,7 +49,14 @@ export function FieldRow({ app, itemId, index, field, onPreview, onDownload }: F
             }
           />
         ) : (
-          <FileValueView value={field.value} onPreview={onPreview} onDownload={onDownload} />
+          <FileValueView
+            app={app}
+            itemId={itemId}
+            index={index}
+            value={field.value}
+            onPreview={onPreview}
+            onDownload={onDownload}
+          />
         )}
       </div>
       <button
@@ -56,42 +71,85 @@ export function FieldRow({ app, itemId, index, field, onPreview, onDownload }: F
 }
 
 function FileValueView({
+  app,
+  itemId,
+  index,
   value,
   onPreview,
   onDownload,
 }: {
+  app: AppApi
+  itemId: string
+  index: number
   value: FileValue
   onPreview: (value: FileValue) => void
   onDownload: (value: FileValue) => void
 }) {
+  const inputRef = useRef<HTMLInputElement>(null)
   const isImage = value.mime.startsWith('image/')
+  const choose = () => inputRef.current?.click()
 
   return (
     <div className="file-block">
-      <div className="file-chip">
+      <div className={value.blobId === null ? 'file-empty' : 'file-chip'}>
         <span className={`file-type${isImage ? ' image' : ''}`}>
           {isImage ? <ImageIcon size={16} /> : <FileIcon size={16} />}
         </span>
-        <div className="file-meta">
-          <span className="file-name" title={value.filename}>
-            {value.filename}
-          </span>
-          <span className="file-size">{formatSize(value.size)}</span>
-        </div>
-        <div className="file-actions">
-          {isImage && (
-            <button className="button small ghost" onClick={() => onPreview(value)}>
-              <EyeIcon size={14} />
-              预览
-            </button>
-          )}
-          <button className="button small ghost" onClick={() => onDownload(value)}>
-            <DownloadIcon size={14} />
-            下载
-          </button>
-        </div>
+        {value.blobId === null ? (
+          <>
+            <span className="file-empty-text">未选择文件</span>
+            <div className="file-actions">
+              <button className="button small soft" onClick={choose}>
+                <PlusIcon size={14} />
+                选择文件
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="file-meta">
+              <span className="file-name" title={value.filename}>
+                {value.filename}
+              </span>
+              <span className="file-size">{formatSize(value.size)}</span>
+            </div>
+            <div className="file-actions">
+              {isImage && (
+                <button className="button small ghost" onClick={() => onPreview(value)}>
+                  <EyeIcon size={14} />
+                  预览
+                </button>
+              )}
+              <button className="button small ghost" onClick={() => onDownload(value)}>
+                <DownloadIcon size={14} />
+                下载
+              </button>
+              <button className="button small ghost" onClick={choose}>
+                更换
+              </button>
+              <button
+                className="button small ghost"
+                onClick={() => app.clearFile(itemId, index)}
+              >
+                清除
+              </button>
+            </div>
+          </>
+        )}
+        <input
+          ref={inputRef}
+          type="file"
+          hidden
+          onChange={(event) => {
+            const file = event.target.files?.[0]
+            event.target.value = ''
+            if (file) void app.setFile(itemId, index, file)
+          }}
+        />
       </div>
-      <p className="file-hint">下载后，文件会以明文离开保险库。</p>
+      {value.blobId !== null && (
+        <p className="file-hint">下载后，文件会以明文离开保险库。</p>
+      )}
     </div>
   )
 }

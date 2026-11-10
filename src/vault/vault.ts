@@ -42,6 +42,8 @@ export async function createVault(
     createdAt: now,
     updatedAt: now,
     items: [],
+    folders: [],
+    templates: [],
     blobs: [],
   }
 

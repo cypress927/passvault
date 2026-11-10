@@ -7,14 +7,24 @@ function sampleData(): VaultData {
     formatVersion: 1,
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-02T00:00:00.000Z',
+    folders: [{ id: 'folder-1', name: '工作' }],
+    templates: [
+      {
+        id: 'tpl-1',
+        name: '自定义模板',
+        description: '测试用',
+        fields: [{ key: '账号', kind: 'text', hint: '邮箱或手机号' }],
+      },
+    ],
     items: [
       {
         id: 'item-1',
         name: '路由器',
         description: '家里的路由器',
+        folderId: 'folder-1',
         fields: [
           { key: '用户名', value: { kind: 'text', text: 'admin' } },
-          { key: '密码', value: { kind: 'text', text: 'p@ssw0rd' } },
+          { key: '密码', hint: '默认在机身上', value: { kind: 'text', text: 'p@ssw0rd' } },
           {
             key: '截图.png',
             value: {
@@ -25,12 +35,17 @@ function sampleData(): VaultData {
               size: 5,
             },
           },
+          {
+            key: '身份证正面照片',
+            value: { kind: 'file', blobId: null, filename: '', mime: '', size: 0 },
+          },
         ],
       },
       {
         id: 'item-2',
         name: '说明书',
         description: '',
+        folderId: null,
         fields: [
           {
             key: 'manual.pdf',
@@ -58,11 +73,13 @@ function sampleData(): VaultData {
 }
 
 describe('container', () => {
-  it('round-trips items and blobs', () => {
+  it('round-trips items, folders, templates and blobs', () => {
     const data = sampleData()
     const packed = packContainer(data.manifest, data.blobs)
     const unpacked = unpackContainer(packed)
     expect(unpacked.manifest.items).toEqual(data.manifest.items)
+    expect(unpacked.manifest.folders).toEqual(data.manifest.folders)
+    expect(unpacked.manifest.templates).toEqual(data.manifest.templates)
     expect(unpacked.manifest.blobs).toEqual([
       { id: 'blob-1', offset: 0, size: 5 },
       { id: 'blob-2', offset: 5, size: 3 },
@@ -71,12 +88,24 @@ describe('container', () => {
     expect(unpacked.blobs.get('blob-2')).toEqual(new Uint8Array([9, 8, 7]))
   })
 
+  it('skips empty file fields when packing blobs', () => {
+    const data = sampleData()
+    const packed = packContainer(data.manifest, data.blobs)
+    const unpacked = unpackContainer(packed)
+    expect(unpacked.manifest.blobs).toHaveLength(2)
+    expect(unpacked.blobs.size).toBe(2)
+  })
+
   it('handles an empty vault', () => {
     const data = sampleData()
     data.manifest.items = []
+    data.manifest.folders = []
+    data.manifest.templates = []
     data.blobs = new Map()
     const unpacked = unpackContainer(packContainer(data.manifest, data.blobs))
     expect(unpacked.manifest.items).toEqual([])
+    expect(unpacked.manifest.folders).toEqual([])
+    expect(unpacked.manifest.templates).toEqual([])
     expect(unpacked.manifest.blobs).toEqual([])
     expect(unpacked.blobs.size).toBe(0)
   })
@@ -114,5 +143,12 @@ describe('container', () => {
     patched.set(patchedJson, 4)
     patched.set(packed.subarray(4 + manifestLen), 4 + patchedJson.length)
     expect(() => unpackContainer(patched)).toThrow('附件区间越界')
+  })
+
+  it('rejects an item pointing at a missing folder', () => {
+    const data = sampleData()
+    data.manifest.items[0].folderId = 'missing-folder'
+    const packed = packContainer(data.manifest, data.blobs)
+    expect(() => unpackContainer(packed)).toThrow('文件夹不存在')
   })
 })

@@ -7,10 +7,18 @@ const SMALL_KDF = { memoryKiB: 1024, iterations: 1, parallelism: 1 }
 describe('vault round-trip', () => {
   it('creates, exports and opens with the same content', async () => {
     const vault = await createVault('correct horse', SMALL_KDF)
+    vault.data.manifest.folders.push({ id: 'folder-1', name: '工作' })
+    vault.data.manifest.templates.push({
+      id: 'tpl-1',
+      name: '自定义模板',
+      description: '测试用',
+      fields: [{ key: '账号', kind: 'text', hint: '邮箱或手机号' }],
+    })
     vault.data.manifest.items.push({
       id: 'item-1',
       name: '邮箱',
       description: '主邮箱',
+      folderId: 'folder-1',
       fields: [
         { key: '账号', value: { kind: 'text', text: 'me@example.com' } },
         { key: '密码', value: { kind: 'text', text: 'hunter2' } },
@@ -24,6 +32,10 @@ describe('vault round-trip', () => {
             size: 4,
           },
         },
+        {
+          key: '身份证正面照片',
+          value: { kind: 'file', blobId: null, filename: '', mime: '', size: 0 },
+        },
       ],
     })
     vault.data.blobs.set('blob-1', new Uint8Array([137, 80, 78, 71]))
@@ -33,6 +45,8 @@ describe('vault round-trip', () => {
 
     const opened = await openVault(bytes, 'correct horse')
     expect(opened.data.manifest.items).toEqual(vault.data.manifest.items)
+    expect(opened.data.manifest.folders).toEqual(vault.data.manifest.folders)
+    expect(opened.data.manifest.templates).toEqual(vault.data.manifest.templates)
     expect(opened.data.blobs.get('blob-1')).toEqual(new Uint8Array([137, 80, 78, 71]))
   })
 

@@ -1,16 +1,30 @@
+import { useState } from 'react'
 import type { AppApi } from '../state/useVaultApp'
 import { ItemEditor } from './ItemEditor'
+import { PromptDialog } from './PromptDialog'
+import { TemplatePicker } from './TemplatePicker'
 import {
   DownloadIcon,
+  EditIcon,
   FileIcon,
+  FolderIcon,
   LockIcon,
   LogoMark,
   PlusIcon,
   SearchIcon,
   ShieldIcon,
+  TrashIcon,
 } from './icons'
 
+type FolderDialog =
+  | { mode: 'create' }
+  | { mode: 'rename'; id: string; name: string }
+
 export function Workspace({ app }: { app: AppApi }) {
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [folderDialog, setFolderDialog] = useState<FolderDialog | null>(null)
+  const ungroupedCount = app.items.filter((item) => item.folderId === null).length
+
   return (
     <div className="workspace">
       <header className="toolbar">
@@ -55,10 +69,72 @@ export function Workspace({ app }: { app: AppApi }) {
                 onChange={(event) => app.setQuery(event.target.value)}
               />
             </div>
-            <button className="button primary block" onClick={app.addItem}>
+            <button className="button primary block" onClick={() => setPickerOpen(true)}>
               <PlusIcon size={16} />
               新建条目
             </button>
+          </div>
+
+          <div className="folders-head">
+            <span>文件夹</span>
+            <button
+              className="icon-button tiny"
+              title="新建文件夹"
+              onClick={() => setFolderDialog({ mode: 'create' })}
+            >
+              <PlusIcon size={15} />
+            </button>
+          </div>
+
+          <div className="folder-list">
+            <button
+              className={`folder-item${app.activeFolder === 'all' ? ' active' : ''}`}
+              onClick={() => app.setActiveFolder('all')}
+            >
+              <span className="folder-dot all" />
+              <span className="folder-name">全部条目</span>
+              <span className="folder-count">{app.items.length}</span>
+            </button>
+            <button
+              className={`folder-item${app.activeFolder === 'none' ? ' active' : ''}`}
+              onClick={() => app.setActiveFolder('none')}
+            >
+              <span className="folder-dot none" />
+              <span className="folder-name">未分组</span>
+              <span className="folder-count">{ungroupedCount}</span>
+            </button>
+            {app.folders.map((folder) => (
+              <div
+                className={`folder-row${app.activeFolder === folder.id ? ' active' : ''}`}
+                key={folder.id}
+              >
+                <button className="folder-item" onClick={() => app.setActiveFolder(folder.id)}>
+                  <FolderIcon size={15} />
+                  <span className="folder-name">{folder.name}</span>
+                  <span className="folder-count">
+                    {app.items.filter((item) => item.folderId === folder.id).length}
+                  </span>
+                </button>
+                <div className="folder-actions">
+                  <button
+                    className="icon-button tiny"
+                    title="重命名"
+                    onClick={() =>
+                      setFolderDialog({ mode: 'rename', id: folder.id, name: folder.name })
+                    }
+                  >
+                    <EditIcon size={13} />
+                  </button>
+                  <button
+                    className="icon-button tiny"
+                    title="删除文件夹（条目移到未分组）"
+                    onClick={() => app.deleteFolder(folder.id)}
+                  >
+                    <TrashIcon size={13} />
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
 
           <div className="list-meta">
@@ -84,7 +160,13 @@ export function Workspace({ app }: { app: AppApi }) {
             {app.filteredItems.length === 0 && (
               <li className="empty-list">
                 <FileIcon size={20} />
-                <span>{app.query ? '没有匹配的条目' : '还没有条目'}</span>
+                <span>
+                  {app.query
+                    ? '没有匹配的条目'
+                    : app.activeFolder === 'all'
+                      ? '还没有条目'
+                      : '这里还没有条目'}
+                </span>
               </li>
             )}
           </ul>
@@ -104,6 +186,26 @@ export function Workspace({ app }: { app: AppApi }) {
           )}
         </main>
       </div>
+
+      {pickerOpen && <TemplatePicker app={app} onClose={() => setPickerOpen(false)} />}
+
+      {folderDialog && (
+        <PromptDialog
+          title={folderDialog.mode === 'create' ? '新建文件夹' : '重命名文件夹'}
+          label="文件夹名称"
+          initialValue={folderDialog.mode === 'rename' ? folderDialog.name : ''}
+          submitLabel={folderDialog.mode === 'create' ? '创建' : '保存'}
+          onSubmit={(name) => {
+            if (folderDialog.mode === 'create') {
+              app.addFolder(name)
+            } else {
+              app.renameFolder(folderDialog.id, name)
+            }
+            setFolderDialog(null)
+          }}
+          onClose={() => setFolderDialog(null)}
+        />
+      )}
     </div>
   )
 }

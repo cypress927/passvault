@@ -1,12 +1,11 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { toBufferSource } from '../crypto/bytes'
 import type { AppApi } from '../state/useVaultApp'
 import type { FileValue, Item } from '../vault/model'
 import { FieldRow } from './FieldRow'
-import { ImageIcon, PlusIcon, TrashIcon, XIcon } from './icons'
+import { FolderIcon, ImageIcon, PlusIcon, TrashIcon, XIcon } from './icons'
 
 export function ItemEditor({ app, item }: { app: AppApi; item: Item }) {
-  const fileInput = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<{ url: string; filename: string } | null>(null)
 
   const openPreview = (value: FileValue) => {
@@ -67,6 +66,23 @@ export function ItemEditor({ app, item }: { app: AppApi; item: Item }) {
         }
       />
 
+      <div className="editor-meta">
+        <label className="folder-pill" title="移动到文件夹">
+          <FolderIcon size={14} />
+          <select
+            value={item.folderId ?? ''}
+            onChange={(event) => app.moveItem(item.id, event.target.value || null)}
+          >
+            <option value="">未分组</option>
+            {app.folders.map((folder) => (
+              <option key={folder.id} value={folder.id}>
+                {folder.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
       <div className="editor-rule" />
 
       <div className="fields-head">
@@ -79,20 +95,10 @@ export function ItemEditor({ app, item }: { app: AppApi; item: Item }) {
             <PlusIcon size={14} />
             添加文本字段
           </button>
-          <button className="button small soft" onClick={() => fileInput.current?.click()}>
+          <button className="button small soft" onClick={() => app.addFileField(item.id)}>
             <PlusIcon size={14} />
             添加文件字段
           </button>
-          <input
-            ref={fileInput}
-            type="file"
-            hidden
-            onChange={(event) => {
-              const file = event.target.files?.[0]
-              event.target.value = ''
-              if (file) void app.addFileField(item.id, file)
-            }}
-          />
         </div>
       </div>
 

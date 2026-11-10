@@ -1,14 +1,23 @@
 import { concatBytes } from '../crypto/aead'
-import type { BlobRef, Field, Item, Manifest, VaultData } from './model'
+import type {
+  BlobRef,
+  Field,
+  Folder,
+  Item,
+  Manifest,
+  Template,
+  VaultData,
+} from './model'
 
 export function packContainer(manifest: Manifest, blobs: Map<string, Uint8Array>): Uint8Array {
   const orderedIds: string[] = []
   const seen = new Set<string>()
   for (const item of manifest.items) {
     for (const field of item.fields) {
-      if (field.value.kind === 'file' && !seen.has(field.value.blobId)) {
-        seen.add(field.value.blobId)
-        orderedIds.push(field.value.blobId)
+      const blobId = field.value.kind === 'file' ? field.value.blobId : null
+      if (blobId && !seen.has(blobId)) {
+        seen.add(blobId)
+        orderedIds.push(blobId)
       }
     }
   }
@@ -71,7 +80,7 @@ export function unpackContainer(plaintext: Uint8Array): VaultData {
 
   for (const item of manifest.items) {
     for (const field of item.fields) {
-      if (field.value.kind === 'file' && !blobs.has(field.value.blobId)) {
+      if (field.value.kind === 'file' && field.value.blobId && !blobs.has(field.value.blobId)) {
         throw new Error('数据已损坏：附件引用缺失')
       }
     }
@@ -98,6 +107,10 @@ function requireNonNegativeInt(value: unknown, field: string): number {
   return value
 }
 
+function optionalString(value: unknown, field: string): string | undefined {
+  return value === undefined ? undefined : requireString(value, field)
+}
+
 function validateManifest(value: unknown): Manifest {
   if (!isRecord(value)) {
     throw new Error('数据已损坏：manifest 结构异常')
@@ -111,11 +124,20 @@ function validateManifest(value: unknown): Manifest {
   if (!Array.isArray(value.items)) {
     throw new Error('数据已损坏：items 不是数组')
   }
-  const items = value.items.map((rawItem, index) => validateItem(rawItem, index))
-
+  if (!Array.isArray(value.folders)) {
+    throw new Error('数据已损坏：folders 不是数组')
+  }
+  if (!Array.isArray(value.templates)) {
+    throw new Error('数据已损坏：templates 不是数组')
+  }
   if (!Array.isArray(value.blobs)) {
     throw new Error('数据已损坏：blobs 不是数组')
   }
+
+  const folders = validateFolders(value.folders)
+  const folderIds = new Set(folders.map((folder) => folder.id))
+  const items = value.items.map((rawItem, index) => validateItem(rawItem, index, folderIds))
+  const templates = validateTemplates(value.templates)
   const blobs: BlobRef[] = value.blobs.map((rawRef, index) => {
     if (!isRecord(rawRef)) {
       throw new Error(`数据已损坏：附件引用 ${index} 结构异常`)
@@ -127,20 +149,70 @@ function validateManifest(value: unknown): Manifest {
     }
   })
 
-  return { formatVersion: 1, createdAt, updatedAt, items, blobs }
+  return { formatVersion: 1, createdAt, updatedAt, items, folders, templates, blobs }
 }
 
-function validateItem(value: unknown, index: number): Item {
+function validateFolders(value: unknown[]): Folder[] {
+  return value.map((raw, index) => {
+    if (!isRecord(raw)) {
+      throw new Error(`数据已损坏：文件夹 ${index} 结构异常`)
+    }
+    return {
+      id: requireString(raw.id, `folders[${index}].id`),
+      name: requireString(raw.name, `folders[${index}].name`),
+    }
+  })
+}
+
+function validateTemplates(value: unknown[]): Template[] {
+  return value.map((raw, index) => {
+    if (!isRecord(raw) || !Array.isArray(raw.fields)) {
+      throw new Error(`数据已损坏：模板 ${index} 结构异常`)
+    }
+    return {
+      id: requireString(raw.id, `templates[${index}].id`),
+      name: requireString(raw.name, `templates[${index}].name`),
+      description: requireString(raw.description, `templates[${index}].description`),
+      fields: raw.fields.map((rawField, fieldIndex) => {
+        if (!isRecord(rawField)) {
+          throw new Error(`数据已损坏：模板 ${index} 的字段 ${fieldIndex} 结构异常`)
+        }
+        if (rawField.kind !== 'text' && rawField.kind !== 'file') {
+          throw new Error(`数据已损坏：模板 ${index} 的字段 ${fieldIndex} 类型异常`)
+        }
+        return {
+          key: requireString(rawField.key, `templates[${index}].fields[${fieldIndex}].key`),
+          kind: rawField.kind,
+          hint: optionalString(rawField.hint, `templates[${index}].fields[${fieldIndex}].hint`),
+        }
+      }),
+    }
+  })
+}
+
+function validateItem(value: unknown, index: number, folderIds: Set<string>): Item {
   if (!isRecord(value)) {
     throw new Error(`数据已损坏：条目 ${index} 结构异常`)
   }
   if (!Array.isArray(value.fields)) {
     throw new Error(`数据已损坏：条目 ${index} 的 fields 不是数组`)
   }
+
+  let folderId: string | null
+  if (value.folderId === null) {
+    folderId = null
+  } else {
+    folderId = requireString(value.folderId, `items[${index}].folderId`)
+    if (!folderIds.has(folderId)) {
+      throw new Error(`数据已损坏：条目 ${index} 的文件夹不存在`)
+    }
+  }
+
   return {
     id: requireString(value.id, `items[${index}].id`),
     name: requireString(value.name, `items[${index}].name`),
     description: requireString(value.description, `items[${index}].description`),
+    folderId,
     fields: value.fields.map((rawField, fieldIndex) =>
       validateField(rawField, index, fieldIndex),
     ),
@@ -152,11 +224,13 @@ function validateField(value: unknown, itemIndex: number, fieldIndex: number): F
     throw new Error(`数据已损坏：条目 ${itemIndex} 的字段 ${fieldIndex} 结构异常`)
   }
   const key = requireString(value.key, `items[${itemIndex}].fields[${fieldIndex}].key`)
+  const hint = optionalString(value.hint, `items[${itemIndex}].fields[${fieldIndex}].hint`)
   const rawValue = value.value
 
   if (rawValue.kind === 'text') {
     return {
       key,
+      hint,
       value: {
         kind: 'text',
         text: requireString(rawValue.text, `items[${itemIndex}].fields[${fieldIndex}].text`),
@@ -164,14 +238,28 @@ function validateField(value: unknown, itemIndex: number, fieldIndex: number): F
     }
   }
   if (rawValue.kind === 'file') {
+    const blobId =
+      rawValue.blobId === null
+        ? null
+        : requireString(
+            rawValue.blobId,
+            `items[${itemIndex}].fields[${fieldIndex}].blobId`,
+          )
     return {
       key,
+      hint,
       value: {
         kind: 'file',
-        blobId: requireString(rawValue.blobId, `items[${itemIndex}].fields[${fieldIndex}].blobId`),
-        filename: requireString(rawValue.filename, `items[${itemIndex}].fields[${fieldIndex}].filename`),
+        blobId,
+        filename: requireString(
+          rawValue.filename,
+          `items[${itemIndex}].fields[${fieldIndex}].filename`,
+        ),
         mime: requireString(rawValue.mime, `items[${itemIndex}].fields[${fieldIndex}].mime`),
-        size: requireNonNegativeInt(rawValue.size, `items[${itemIndex}].fields[${fieldIndex}].size`),
+        size: requireNonNegativeInt(
+          rawValue.size,
+          `items[${itemIndex}].fields[${fieldIndex}].size`,
+        ),
       },
     }
   }

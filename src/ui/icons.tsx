@@ -135,3 +135,36 @@ export function LogoMark({ size = 36 }: { size?: number }) {
     </span>
   )
 }
+
+export function FolderIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M3.5 7.5A1.5 1.5 0 0 1 5 6h4l1.8 2H19a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 19 19H5a1.5 1.5 0 0 1-1.5-1.5Z" />
+    </Svg>
+  )
+}
+
+export function EditIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M4 20h4L18.5 9.5a2.12 2.12 0 0 0-3-3L5 17Z" />
+      <path d="m14.5 6.5 3 3" />
+    </Svg>
+  )
+}
+
+export function UpIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="m6 14 6-6 6 6" />
+    </Svg>
+  )
+}
+
+export function DownIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="m6 10 6 6 6-6" />
+    </Svg>
+  )
+}
