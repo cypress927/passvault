@@ -56,7 +56,7 @@ npm run build:pwa
 1. 在 GitHub 创建仓库，把本地 `main` 推上去。
 2. 仓库 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**。
 
-   如果工作流报 `Get Pages site failed`，说明 Pages 还没有启用：先完成这一步，然后重跑工作流。工作流里的 `configure-pages` 也带了 `enablement: true`，公开仓库下会尝试自动启用。
+   如果工作流报 `Get Pages site failed`，说明 Pages 还没有启用：先完成这一步，然后重跑工作流。工作流里的 `configure-pages` 也带了 `enablement: true`，公开仓库下会尝试自动启用。首次启用后第一次运行仍可能 404，这是 Pages 站点创建/传播的延迟，重跑一次即可。
 
    如果 Settings 里没有 Pages 或提示不可用，通常是因为仓库是私有且套餐不支持。免费账号请把仓库设为 **public**（仓库只含代码，`*.vault` 不会入库），或升级套餐；也可以改用 Cloudflare Pages（免费版支持私有仓库）。
 
