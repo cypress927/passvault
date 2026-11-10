@@ -27,7 +27,8 @@
 - **移动端**：`≤760px` 单栏主从切换（列表 ↔ 编辑 + 返回按钮）；顶栏图标按钮；触控目标约 40px；触屏上文件夹操作常显。
 - **界面**：浅色/深色模式、内联 SVG 图标、模板选择/管理弹窗、CSV 导入预览、成功/错误提示。
 - **单文件构建**：`npm run build:single` → `dist-single/passmgmt.html`；JS/CSS/WASM/Worker 全内联；已从 `file://` 实测创建/导出/重新导入。
-- **PWA 构建**：`npm run build:pwa` → `dist-pwa/`；manifest、PNG 图标、Service Worker、离线缓存；已实测注册、缓存、断网重载、断网创建库。
+- **PWA 构建**：`npm run build:pwa` → `dist-pwa/`；manifest、PNG 图标、Service Worker、离线缓存；相对路径，已实测根路径和 `/passmgmt/` 子路径下的注册、缓存、断网重载、断网创建库。
+- **GitHub Pages**：`.github/workflows/deploy-pages.yml` 自动构建并发布 `dist-pwa/`。
 
 ## 当前验证
 

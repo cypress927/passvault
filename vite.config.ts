@@ -31,6 +31,7 @@ export default defineConfig(({ command, mode }) => {
   const csp = single ? SINGLE_CSP : STRICT_CSP
 
   return {
+    base: pwa ? './' : '/',
     plugins: [
       react(),
       {

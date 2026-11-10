@@ -49,6 +49,20 @@ npm run build:pwa
 - 单文件版用于桌面本地双击；PWA 版用于 iOS 主屏和离线。
 - iOS Safari 没有 File System Access API，保存仍然是一次新的下载。
 
+### 部署到 GitHub Pages
+
+仓库里已经包含 `.github/workflows/deploy-pages.yml`，流程是 `npm ci` → `npm test` → `npm run build:pwa` → 发布 `dist-pwa/`。
+
+1. 在 GitHub 创建仓库，把本地 `main` 推上去。
+2. 仓库 **Settings → Pages → Build and deployment → Source** 选择 **GitHub Actions**。
+3. 之后每次 push 到 `main`，或手动运行 **Deploy PWA to GitHub Pages** 工作流，都会构建并发布。
+4. 项目站点地址：`https://<user>.github.io/<repo>/`；如果仓库名是 `<user>.github.io`，地址是 `https://<user>.github.io/`。
+5. iPhone Safari 打开该地址 → 分享 → **添加到主屏幕**。
+
+PWA 构建使用相对路径，项目站点和用户站点都适用，不需要改 `base`。
+
+注意：私有仓库发布 GitHub Pages 需要 GitHub 付费计划；否则把仓库设为 public。仓库只包含程序代码，`.vault` 数据永远不会上传。
+
 ## 使用
 
 1. **新建**：设置密码，从空库开始。
