@@ -107,6 +107,7 @@ npm run build:pwa     # dist-pwa/（PWA 静态目录）
 - **测试数据**：E2E 脚本此前在仓库外临时目录运行，未提交；仓库内的自动化验证是 `npm test` + 手动冒烟清单。
 - **单文件构建**：`scripts/build-single.mjs` 负责把 Vite 产物内联成 `passmgmt.html`；Worker 通过 `?worker&inline` 内联。单文件版 CSP 允许 `'unsafe-inline'`，普通/PWA 构建仍用严格 CSP。
 - **移动端抽屉过渡**：`transition: transform` 只加在 `.workspace-body.editing.drawer-animate .sidebar` 上；不要直接加在 `.editing .sidebar`，否则从全屏列表进入编辑时整块白色列表会滑出去。
+- **PWA 更新白屏**：`pwa/sw.js` 的导航请求必须 network-first，安装预缓存用 `cache: 'reload'`，避免旧 HTML 指向新/旧哈希资源。用户若已白屏，清除该站点 Website Data 后重新打开；不要在部署窗口刷新。
 - **iOS 顶部安全区**：`index.html` 使用 `viewport-fit=cover`；`.app` 用 `env(safe-area-inset-top)` 留白，`.app::before` 画实色条；修改时不要移除，否则 PWA 状态栏会透出内容并出现模糊。
 - **PWA 构建**：`pwa/sw.js` 是简单的 cache-first Service Worker，构建时把资源清单和构建时间写入；`manifest.json`、`register-sw.js`、SW 缓存都使用相对路径，因此可部署在站点根目录或任意子路径（GitHub Pages 项目站点）。PWA 的 `theme-color` 按浅色/深色分别注入。
 
