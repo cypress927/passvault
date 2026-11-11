@@ -38,10 +38,11 @@ passmgmt：本地优先的加密资源库网页应用。数据存成单个 `.vau
 - 图片缩略图直接预览；其他附件下载/更换/清除。
 - KeePassXC / KeePass 1.x CSV 导入（含预览、错误提示）。
 - 去重工具：按名称、描述、字段（字段名、类型、值、附件字节）完全一致分组；列表里由用户勾选删除，或一键勾选每组其余条目；文件夹不参与比较。删除条目会同时清理不再被引用的附件 blob。
+- 验证码视图：左栏「条目 / 验证码」切换；只列出含 `totp` 字段的条目，显示实时验证码、倒计时与复制；用户名按字段名优先匹配（用户名、账号、邮箱地址、手机号、登录名、username、account、email），用于区分同名账号。
 - 移动端 `≤760px` 列表全屏；编辑时左侧抽屉切换条目/文件夹，遮罩或「返回」回列表；顶部用 safe-area 实色条避免 iOS 主屏状态栏模糊。
 - 单文件构建：`npm run build:single` 产出 `dist-single/passmgmt.html`，JS/CSS/WASM/Worker 全内联；已在 Edge `file://` 下通过创建/导出/导入 E2E。
 - PWA 构建：`npm run build:pwa` 产出 `dist-pwa/`（manifest、图标、Service Worker）；已实测 Service Worker 注册、缓存全部资源、断网重载、断网创建库。
-- 70 个单元测试、`tsc`、构建、桌面/移动 Playwright E2E 均通过。
+- 76 个单元测试、`tsc`、构建、桌面/移动 Playwright E2E 均通过。
 
 详细清单、验证结果和限制见 `PROGRESS.md`。
 
@@ -51,7 +52,7 @@ passmgmt：本地优先的加密资源库网页应用。数据存成单个 `.vau
 npm install
 npm run dev        # 默认 http://localhost:5173
 npx tsc --noEmit
-npm test           # 70 tests
+npm test           # 76 tests
 npm run build
 npm run build:single  # dist-single/passmgmt.html（单文件）
 npm run build:pwa     # dist-pwa/（PWA 静态目录）
@@ -82,9 +83,9 @@ npm run build:pwa     # dist-pwa/（PWA 静态目录）
 ## 代码地图
 
 - `src/crypto/`：`kdf.ts`（Argon2id）、`aead.ts`（分块 AES-GCM）、`keys.ts`（KEK/DEK）、`password.ts`（密码生成）、`totp.ts`（TOTP）、`argon2*`（Worker）、`bytes.ts`（BufferSource 类型适配）。
-- `src/vault/`：`model.ts`（类型）、`format.ts`（文件头）、`container.ts`（manifest+blob 打包/校验）、`vault.ts`（创建/打开/导出）、`builtinTemplates.ts`、`templates.ts`、`keepassCsv.ts`、`dedupe.ts`（完全重复条目分组）。
+- `src/vault/`：`model.ts`（类型）、`format.ts`（文件头）、`container.ts`（manifest+blob 打包/校验）、`vault.ts`（创建/打开/导出）、`builtinTemplates.ts`、`templates.ts`、`keepassCsv.ts`、`dedupe.ts`（完全重复条目分组）、`otpView.ts`（验证码视图筛选与用户名匹配）。
 - `src/state/useVaultApp.ts`：会话、条目、文件夹、模板、CSV 导入、密码选项、通知。
-- `src/ui/`：`Welcome`、`Workspace`、`ItemEditor`、`FieldRow`、`TemplatePicker/Manager/Editor`、`CsvImportDialog`、`DedupeDialog`、`PasswordGeneratorDialog`、`TotpCode`、`PromptDialog`、`icons`。
+- `src/ui/`：`Welcome`、`Workspace`、`ItemEditor`、`FieldRow`、`TemplatePicker/Manager/Editor`、`CsvImportDialog`、`DedupeDialog`、`OtpView`、`PasswordGeneratorDialog`、`TotpCode`、`PromptDialog`、`icons`。
 - `pwa/`：manifest、Service Worker 模板、注册脚本、PNG 图标。
 - `.github/workflows/deploy-pages.yml`：GitHub Pages 构建与发布工作流；`configure-pages` 带 `enablement: true`。若报 `Get Pages site failed`，先在 Settings → Pages 把 Source 设为 GitHub Actions；首次启用后可能还要重跑一次（站点创建有传播延迟）。私有仓库需要套餐支持，否则改为 public 或换 Cloudflare Pages。
 - `scripts/build-single.mjs` / `scripts/build-pwa.mjs`：单文件和 PWA 的后处理脚本。

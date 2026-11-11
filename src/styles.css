@@ -2195,6 +2195,175 @@ textarea.editor-description:focus {
   }
 }
 
+.view-switch {
+  margin-bottom: 2px;
+}
+
+.view-switch button {
+  height: 30px;
+  font-size: 12.5px;
+}
+
+.otp-view {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.otp-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 24px 14px;
+}
+
+.otp-head-text h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.2px;
+}
+
+.otp-head-text p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.otp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+  padding: 0 24px 28px;
+  align-content: start;
+}
+
+.otp-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.otp-card-open {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.otp-card-open:focus-visible {
+  outline: none;
+  border-radius: 6px;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.otp-card-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.otp-card-open:hover .otp-card-name {
+  color: var(--accent-text);
+}
+
+.otp-card-user {
+  font-size: 12px;
+  color: var(--muted);
+  word-break: break-all;
+}
+
+.otp-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.otp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.otp-field-key {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.totp-panel.card {
+  width: 100%;
+  padding: 12px 14px;
+  gap: 8px;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.totp-panel.card .totp-code {
+  font-size: 30px;
+  letter-spacing: 3px;
+}
+
+.totp-panel.card.empty,
+.totp-panel.card.invalid {
+  min-height: 84px;
+  font-size: 12px;
+}
+
+.totp-panel.card .totp-meta {
+  font-size: 12px;
+}
+
+.totp-panel.card .totp-meta .button {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.otp-empty {
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 60px 24px;
+  color: var(--muted);
+}
+
+.otp-empty p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.otp-empty span:last-child {
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .otp-head {
+    padding: 14px 16px 12px;
+  }
+
+  .otp-grid {
+    grid-template-columns: 1fr;
+    padding: 0 16px 24px;
+  }
+
+  .totp-panel.card .totp-code {
+    font-size: 32px;
+  }
+}
+
 @media (max-width: 760px) {
   .toolbar {
     height: 60px;

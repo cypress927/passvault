@@ -6,7 +6,14 @@ type State =
   | { status: 'invalid'; error: string }
   | { status: 'ok'; code: string; remaining: number; period: number; digits: number }
 
-export function TotpCode({ secret }: { secret: string }) {
+export function TotpCode({
+  secret,
+  variant = 'inline',
+}: {
+  secret: string
+  variant?: 'inline' | 'card'
+}) {
+  const panel = variant === 'card' ? 'totp-panel card' : 'totp-panel'
   const [state, setState] = useState<State>({ status: 'empty' })
   const [copied, setCopied] = useState(false)
   const [copyError, setCopyError] = useState<string | null>(null)
@@ -69,7 +76,7 @@ export function TotpCode({ secret }: { secret: string }) {
 
   if (state.status === 'empty') {
     return (
-      <div className="totp-panel empty">
+      <div className={`${panel} empty`}>
         <span>填入密钥后显示验证码</span>
       </div>
     )
@@ -77,7 +84,7 @@ export function TotpCode({ secret }: { secret: string }) {
 
   if (state.status === 'invalid') {
     return (
-      <div className="totp-panel invalid">
+      <div className={`${panel} invalid`}>
         <span>无法解析 TOTP 密钥</span>
         <small>{state.error}</small>
       </div>
@@ -90,7 +97,7 @@ export function TotpCode({ secret }: { secret: string }) {
       : `${state.code.slice(0, 3)} ${state.code.slice(3)}`
 
   return (
-    <div className="totp-panel">
+    <div className={panel}>
       <div className="totp-code">{formatted}</div>
       <div className="totp-bar">
         <span style={{ width: `${(state.remaining / state.period) * 100}%` }} />

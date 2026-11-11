@@ -3,6 +3,7 @@ import type { AppApi } from '../state/useVaultApp'
 import { CsvImportDialog } from './CsvImportDialog'
 import { DedupeDialog } from './DedupeDialog'
 import { ItemEditor } from './ItemEditor'
+import { OtpView } from './OtpView'
 import { PromptDialog } from './PromptDialog'
 import { TemplatePicker } from './TemplatePicker'
 import {
@@ -31,6 +32,7 @@ export function Workspace({ app }: { app: AppApi }) {
   const [folderDialog, setFolderDialog] = useState<FolderDialog | null>(null)
   const [csvOpen, setCsvOpen] = useState(false)
   const [dedupeOpen, setDedupeOpen] = useState(false)
+  const [view, setView] = useState<'items' | 'otp'>('items')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [drawerAnimate, setDrawerAnimate] = useState(false)
   const ungroupedCount = app.items.filter((item) => item.folderId === null).length
@@ -102,9 +104,41 @@ export function Workspace({ app }: { app: AppApi }) {
         </div>
       </header>
 
+      {view === 'otp' ? (
+        <OtpView
+          app={app}
+          onBack={() => setView('items')}
+          onOpenItem={(id) => {
+            app.select(id)
+            setView('items')
+          }}
+        />
+      ) : (
       <div className={`workspace-body${app.selectedItem ? ' editing' : ''}${drawerOpen ? ' drawer-open' : ''}${drawerAnimate ? ' drawer-animate' : ''}`}>
         <aside className="sidebar">
           <div className="sidebar-head">
+            <div className="segmented view-switch" role="tablist" aria-label="视图">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={true}
+                className="active"
+                onClick={() => setView('items')}
+              >
+                条目
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={false}
+                onClick={() => {
+                  setView('otp')
+                  setDrawerOpen(false)
+                }}
+              >
+                验证码
+              </button>
+            </div>
             <div className="search-box">
               <SearchIcon size={16} />
               <input
@@ -267,6 +301,7 @@ export function Workspace({ app }: { app: AppApi }) {
 
         <div className="drawer-backdrop" onClick={() => setDrawerOpen(false)} />
       </div>
+      )}
 
       {pickerOpen && <TemplatePicker app={app} onClose={() => setPickerOpen(false)} />}
 
