@@ -38,11 +38,12 @@ passmgmt：本地优先的加密资源库网页应用。数据存成单个 `.vau
 - 图片缩略图直接预览；其他附件下载/更换/清除。
 - KeePassXC / KeePass 1.x CSV 导入（含预览、错误提示）。
 - 去重工具：按名称、描述、字段（字段名、类型、值、附件字节）完全一致分组；列表里由用户勾选删除，或一键勾选每组其余条目；文件夹不参与比较。删除条目会同时清理不再被引用的附件 blob。
-- 验证码视图：左栏「条目 / 验证码」切换；只列出含 `totp` 字段的条目，显示实时验证码、倒计时与复制；用户名按字段名优先匹配（用户名、账号、邮箱地址、手机号、登录名、username、account、email），用于区分同名账号。
-- 移动端 `≤760px` 列表全屏；编辑时左侧抽屉切换条目/文件夹，遮罩或「返回」回列表；顶部用 safe-area 实色条避免 iOS 主屏状态栏模糊。
+- 验证码视图：桌面左栏「验证码」/ 移动底部 Tab 进入；只列出含 `totp` 字段的条目，显示实时验证码、倒计时与复制；用户名按字段名优先匹配（用户名、账号、邮箱地址、手机号、登录名、username、account、email），用于区分同名账号。
+- 桌面端参考 Bitwarden 的三栏布局：左栏导航（条目 / 验证码 / 设置 + 文件夹筛选 + 锁定）、中栏资源库列表（大标题、搜索、条目卡片）、右栏条目编辑；导出、导入 CSV、去重和文件夹管理都在设置页。
+- 移动端 `≤960px` 使用独立布局（`MobileWorkspace`，参考 Bitwarden）：资源库列表（大标题、搜索、按文件夹分节的卡片）、底部 Tab（条目 / 验证码 / 设置）、右下角 + 新建；点条目进入全屏编辑页，左上角返回。不再使用抽屉。
 - 单文件构建：`npm run build:single` 产出 `dist-single/passmgmt.html`，JS/CSS/WASM/Worker 全内联；已在 Edge `file://` 下通过创建/导出/导入 E2E。
 - PWA 构建：`npm run build:pwa` 产出 `dist-pwa/`（manifest、图标、Service Worker）；已实测 Service Worker 注册、缓存全部资源、断网重载、断网创建库。
-- 76 个单元测试、`tsc`、构建、桌面/移动 Playwright E2E 均通过。
+- 80 个单元测试、`tsc`、构建、桌面/移动 Playwright E2E 均通过。
 
 详细清单、验证结果和限制见 `PROGRESS.md`。
 
@@ -52,7 +53,7 @@ passmgmt：本地优先的加密资源库网页应用。数据存成单个 `.vau
 npm install
 npm run dev        # 默认 http://localhost:5173
 npx tsc --noEmit
-npm test           # 76 tests
+npm test           # 80 tests
 npm run build
 npm run build:single  # dist-single/passmgmt.html（单文件）
 npm run build:pwa     # dist-pwa/（PWA 静态目录）
@@ -64,7 +65,7 @@ npm run build:pwa     # dist-pwa/（PWA 静态目录）
 
 1. `npx tsc --noEmit && npm test && npm run build`
 2. 冒烟：新建库 → 用模板建条目 → 生成密码 → 填 TOTP → 导出 → 锁定 → 导入 → 内容还原。
-3. 移动端 390×844：列表 ↔ 编辑、返回按钮、顶栏不横向溢出。
+3. 移动端 390×844：底部 Tab、列表按文件夹分节、搜索、FAB 新建、条目页返回、设置里的导出与文件夹管理；无横向溢出。
 
 ## 关键约束
 
@@ -83,9 +84,9 @@ npm run build:pwa     # dist-pwa/（PWA 静态目录）
 ## 代码地图
 
 - `src/crypto/`：`kdf.ts`（Argon2id）、`aead.ts`（分块 AES-GCM）、`keys.ts`（KEK/DEK）、`password.ts`（密码生成）、`totp.ts`（TOTP）、`argon2*`（Worker）、`bytes.ts`（BufferSource 类型适配）。
-- `src/vault/`：`model.ts`（类型）、`format.ts`（文件头）、`container.ts`（manifest+blob 打包/校验）、`vault.ts`（创建/打开/导出）、`builtinTemplates.ts`、`templates.ts`、`keepassCsv.ts`、`dedupe.ts`（完全重复条目分组）、`otpView.ts`（验证码视图筛选与用户名匹配）。
+- `src/vault/`：`model.ts`（类型）、`format.ts`（文件头）、`container.ts`（manifest+blob 打包/校验）、`vault.ts`（创建/打开/导出）、`builtinTemplates.ts`、`templates.ts`、`keepassCsv.ts`、`dedupe.ts`（完全重复条目分组）、`otpView.ts`（验证码视图筛选与用户名匹配）、`search.ts`（搜索匹配）。
 - `src/state/useVaultApp.ts`：会话、条目、文件夹、模板、CSV 导入、密码选项、通知。
-- `src/ui/`：`Welcome`、`Workspace`、`ItemEditor`、`FieldRow`、`TemplatePicker/Manager/Editor`、`CsvImportDialog`、`DedupeDialog`、`OtpView`、`PasswordGeneratorDialog`、`TotpCode`、`PromptDialog`、`icons`。
+- `src/ui/`：`Welcome`、`Workspace`（桌面）、`MobileWorkspace`（≤960px 独立布局）、`VaultList`、`SettingsPanel`、`useIsMobile`、`ItemEditor`、`FieldRow`、`TemplatePicker/Manager/Editor`、`CsvImportDialog`、`DedupeDialog`、`OtpView`、`PasswordGeneratorDialog`、`TotpCode`、`PromptDialog`、`icons`。
 - `pwa/`：manifest、Service Worker 模板、注册脚本、PNG 图标。
 - `.github/workflows/deploy-pages.yml`：GitHub Pages 构建与发布工作流；`configure-pages` 带 `enablement: true`。若报 `Get Pages site failed`，先在 Settings → Pages 把 Source 设为 GitHub Actions；首次启用后可能还要重跑一次（站点创建有传播延迟）。私有仓库需要套餐支持，否则改为 public 或换 Cloudflare Pages。
 - `scripts/build-single.mjs` / `scripts/build-pwa.mjs`：单文件和 PWA 的后处理脚本。
@@ -109,7 +110,8 @@ npm run build:pwa     # dist-pwa/（PWA 静态目录）
 - **WebCrypto 类型**：字节数组传给 WebCrypto/Blob 时用 `src/crypto/bytes.ts` 的 `toBufferSource`，避免 TypeScript 的 `ArrayBufferLike` 报错。
 - **测试数据**：E2E 脚本此前在仓库外临时目录运行，未提交；仓库内的自动化验证是 `npm test` + 手动冒烟清单。
 - **单文件构建**：`scripts/build-single.mjs` 负责把 Vite 产物内联成 `passmgmt.html`；Worker 通过 `?worker&inline` 内联。单文件版 CSP 允许 `'unsafe-inline'`，普通/PWA 构建仍用严格 CSP。
-- **移动端抽屉过渡**：`transition: transform` 只加在 `.workspace-body.editing.drawer-animate .sidebar` 上；不要直接加在 `.editing .sidebar`，否则从全屏列表进入编辑时整块白色列表会滑出去。
+- **布局分叉**：`Workspace` 用 `useIsMobile()`（960px）决定渲染桌面三栏还是 `MobileWorkspace`；两边共用 `VaultList` 和 `SettingsPanel`。视图级样式用 `.view-*` / `.settings-*`，移动端专有的底部 Tab、FAB、条目页顶栏用 `.mobile-*`。
+- **输入框样式优先级**：全局文本输入规则带 4 个 `:not()` 伪类，普通类选择器覆盖不了它的 border/height。移动端搜索框为了去掉内层边框，复用了同样的 `:not()` 选择器；改这里时不要再换成低优先级写法。
 - **PWA 更新白屏**：`pwa/sw.js` 的导航请求必须 network-first，安装预缓存用 `cache: 'reload'`，避免旧 HTML 指向新/旧哈希资源。用户若已白屏，清除该站点 Website Data 后重新打开；不要在部署窗口刷新。
 - **iOS 顶部安全区**：`index.html` 使用 `viewport-fit=cover`；`.app` 用 `env(safe-area-inset-top)` 留白，`.app::before` 画实色条；修改时不要移除，否则 PWA 状态栏会透出内容并出现模糊。
 - **PWA 构建**：`pwa/sw.js` 是简单的 cache-first Service Worker，构建时把资源清单和构建时间写入；`manifest.json`、`register-sw.js`、SW 缓存都使用相对路径，因此可部署在站点根目录或任意子路径（GitHub Pages 项目站点）。PWA 的 `theme-color` 按浅色/深色分别注入。

@@ -5,6 +5,7 @@ import { DEFAULT_PASSWORD_OPTIONS, type PasswordOptions } from '../crypto/passwo
 import type { Field, FieldKind, FileValue, Folder, Item, Template, VaultData } from '../vault/model'
 import type { Header } from '../vault/format'
 import type { ParsedCsvImport } from '../vault/keepassCsv'
+import { matchesQuery } from '../vault/search'
 import { itemFromTemplate } from '../vault/templates'
 import { createVault, exportVault, openVault } from '../vault/vault'
 
@@ -81,18 +82,6 @@ function defaultFilename(): string {
   const now = new Date()
   const pad = (value: number) => String(value).padStart(2, '0')
   return `vault-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}.vault`
-}
-
-function matchesQuery(item: Item, query: string): boolean {
-  const needle = query.trim().toLowerCase()
-  if (!needle) return true
-  if (item.name.toLowerCase().includes(needle)) return true
-  if (item.description.toLowerCase().includes(needle)) return true
-  return item.fields.some((field) => {
-    if (field.key.toLowerCase().includes(needle)) return true
-    if (field.value.kind !== 'file') return field.value.text.toLowerCase().includes(needle)
-    return field.value.filename.toLowerCase().includes(needle)
-  })
 }
 
 function downloadBytes(bytes: Uint8Array, filename: string): void {

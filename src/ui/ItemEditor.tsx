@@ -174,7 +174,7 @@ export function ItemEditor({ app, item }: { app: AppApi; item: Item }) {
       </div>
 
       <div className="editor-footer">
-        <span className="editor-hint">修改只保存在内存里；点击「导出」才会生成新的加密文件。</span>
+        <span className="editor-hint">修改只保存在内存里；在设置里点击「导出加密文件」才会生成新的加密文件。</span>
         <button className="button danger small" onClick={() => app.deleteItem(item.id)}>
           <TrashIcon size={15} />
           删除条目

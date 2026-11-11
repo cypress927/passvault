@@ -10,7 +10,7 @@ export function OtpView({
   onOpenItem,
 }: {
   app: AppApi
-  onBack: () => void
+  onBack?: () => void
   onOpenItem: (id: string) => void
 }) {
   const entries = useMemo(() => itemsWithTotp(app.items), [app.items])
@@ -18,10 +18,12 @@ export function OtpView({
   return (
     <main className="otp-view">
       <header className="otp-head">
-        <button className="button ghost" onClick={onBack}>
-          <ChevronLeftIcon size={18} />
-          条目
-        </button>
+        {onBack && (
+          <button className="button ghost" onClick={onBack}>
+            <ChevronLeftIcon size={18} />
+            条目
+          </button>
+        )}
         <div className="otp-head-text">
           <h2>验证码</h2>
           <p>{entries.length} 个条目包含 TOTP 字段</p>

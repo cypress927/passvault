@@ -1,314 +1,168 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { AppApi } from '../state/useVaultApp'
 import { CsvImportDialog } from './CsvImportDialog'
 import { DedupeDialog } from './DedupeDialog'
 import { ItemEditor } from './ItemEditor'
+import { MobileWorkspace } from './MobileWorkspace'
 import { OtpView } from './OtpView'
 import { PromptDialog } from './PromptDialog'
+import { SettingsPanel, type SettingsFolderDialog } from './SettingsPanel'
 import { TemplatePicker } from './TemplatePicker'
+import { VaultList } from './VaultList'
+import { useIsMobile } from './useIsMobile'
 import {
-  ChevronLeftIcon,
-  CopyIcon,
-  DownloadIcon,
-  EditIcon,
   FileIcon,
   FolderIcon,
+  GearIcon,
   LockIcon,
   LogoMark,
-  MenuIcon,
   PlusIcon,
-  SearchIcon,
   ShieldIcon,
-  TrashIcon,
-  UploadIcon,
 } from './icons'
 
-type FolderDialog =
-  | { mode: 'create' }
-  | { mode: 'rename'; id: string; name: string }
+type View = 'vault' | 'otp' | 'settings'
 
 export function Workspace({ app }: { app: AppApi }) {
+  const mobile = useIsMobile()
+  return mobile ? <MobileWorkspace app={app} /> : <DesktopWorkspace app={app} />
+}
+
+function DesktopWorkspace({ app }: { app: AppApi }) {
+  const [view, setView] = useState<View>('vault')
   const [pickerOpen, setPickerOpen] = useState(false)
-  const [folderDialog, setFolderDialog] = useState<FolderDialog | null>(null)
   const [csvOpen, setCsvOpen] = useState(false)
   const [dedupeOpen, setDedupeOpen] = useState(false)
-  const [view, setView] = useState<'items' | 'otp'>('items')
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const [drawerAnimate, setDrawerAnimate] = useState(false)
+  const [folderDialog, setFolderDialog] = useState<SettingsFolderDialog | null>(null)
   const ungroupedCount = app.items.filter((item) => item.folderId === null).length
 
-  useEffect(() => {
-    if (!app.selectedItem) {
-      setDrawerOpen(false)
-      setDrawerAnimate(false)
-    }
-  }, [app.selectedItem])
+  const navItem = (target: View) =>
+    `desktop-nav-item${view === target ? ' active' : ''}`
+  const folderItem = (filter: string) =>
+    `desktop-folder${app.activeFolder === filter ? ' active' : ''}`
 
   return (
-    <div className="workspace">
-      <header className="toolbar">
-        <div className="toolbar-brand">
-          <LogoMark size={28} />
-          <span className="toolbar-brand-name">passmgmt</span>
+    <div className="desktop-app">
+      <aside className="desktop-nav">
+        <div className="desktop-brand">
+          <LogoMark size={26} />
+          <span>passmgmt</span>
         </div>
-        <span className="toolbar-divider" />
-        <div className="toolbar-file">
-          <span className="filename">{app.session?.filename}</span>
-          {app.session?.dirty ? (
-            <span className="badge dirty">未导出</span>
-          ) : (
-            <span className="badge clean">已导出</span>
-          )}
-        </div>
-        <div className="toolbar-actions">
-          <button
-            className="button ghost"
-            aria-label="去重"
-            title="去重"
-            onClick={() => setDedupeOpen(true)}
-            disabled={app.busy !== null}
-          >
-            <CopyIcon size={16} />
-            <span className="button-label">去重</span>
-          </button>
-          <button
-            className="button"
-            aria-label="导入 CSV"
-            title="导入 CSV"
-            onClick={() => setCsvOpen(true)}
-            disabled={app.busy !== null}
-          >
-            <UploadIcon size={16} />
-            <span className="button-label">导入 CSV</span>
-          </button>
-          <button
-            className="button primary"
-            aria-label="导出"
-            title="导出"
-            onClick={() => void app.exportCurrent()}
-            disabled={app.busy !== null}
-          >
-            <DownloadIcon size={16} />
-            <span className="button-label">导出</span>
-          </button>
-          <button
-            className="button ghost"
-            aria-label="锁定"
-            title="锁定"
-            onClick={app.lock}
-            disabled={app.busy !== null}
-          >
-            <LockIcon size={16} />
-            <span className="button-label">锁定</span>
-          </button>
-        </div>
-      </header>
 
-      {view === 'otp' ? (
-        <OtpView
-          app={app}
-          onBack={() => setView('items')}
-          onOpenItem={(id) => {
-            app.select(id)
-            setView('items')
-          }}
-        />
-      ) : (
-      <div className={`workspace-body${app.selectedItem ? ' editing' : ''}${drawerOpen ? ' drawer-open' : ''}${drawerAnimate ? ' drawer-animate' : ''}`}>
-        <aside className="sidebar">
-          <div className="sidebar-head">
-            <div className="segmented view-switch" role="tablist" aria-label="视图">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={true}
-                className="active"
-                onClick={() => setView('items')}
-              >
-                条目
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={false}
-                onClick={() => {
-                  setView('otp')
-                  setDrawerOpen(false)
-                }}
-              >
-                验证码
-              </button>
-            </div>
-            <div className="search-box">
-              <SearchIcon size={16} />
-              <input
-                className="search"
-                placeholder="搜索名称、描述、字段、附件名"
-                value={app.query}
-                onChange={(event) => app.setQuery(event.target.value)}
-              />
-            </div>
-            <button
-              className="button primary block"
-              onClick={() => {
-                setPickerOpen(true)
-                setDrawerOpen(false)
-              }}
-            >
-              <PlusIcon size={16} />
-              新建条目
-            </button>
-          </div>
+        <nav className="desktop-nav-items" aria-label="主导航">
+          <button className={navItem('vault')} onClick={() => setView('vault')}>
+            <FileIcon size={17} />
+            条目
+          </button>
+          <button className={navItem('otp')} onClick={() => setView('otp')}>
+            <ShieldIcon size={17} />
+            验证码
+          </button>
+          <button className={navItem('settings')} onClick={() => setView('settings')}>
+            <GearIcon size={17} />
+            设置
+          </button>
+        </nav>
 
-          <div className="folders-head">
+        <div className="desktop-folders">
+          <div className="desktop-folders-head">
             <span>文件夹</span>
             <button
               className="icon-button tiny"
               title="新建文件夹"
               onClick={() => setFolderDialog({ mode: 'create' })}
             >
-              <PlusIcon size={15} />
+              <PlusIcon size={14} />
             </button>
           </div>
-
-          <div className="folder-list">
+          <button
+            className={folderItem('all')}
+            onClick={() => {
+              app.setActiveFolder('all')
+              setView('vault')
+            }}
+          >
+            <span className="desktop-folder-dot" />
+            <span className="desktop-folder-name">全部条目</span>
+            <span className="desktop-folder-count">{app.items.length}</span>
+          </button>
+          <button
+            className={folderItem('none')}
+            onClick={() => {
+              app.setActiveFolder('none')
+              setView('vault')
+            }}
+          >
+            <span className="desktop-folder-dot none" />
+            <span className="desktop-folder-name">未分组</span>
+            <span className="desktop-folder-count">{ungroupedCount}</span>
+          </button>
+          {app.folders.map((folder) => (
             <button
-              className={`folder-item${app.activeFolder === 'all' ? ' active' : ''}`}
-              onClick={() => app.setActiveFolder('all')}
+              key={folder.id}
+              className={folderItem(folder.id)}
+              onClick={() => {
+                app.setActiveFolder(folder.id)
+                setView('vault')
+              }}
             >
-              <span className="folder-dot all" />
-              <span className="folder-name">全部条目</span>
-              <span className="folder-count">{app.items.length}</span>
-            </button>
-            <button
-              className={`folder-item${app.activeFolder === 'none' ? ' active' : ''}`}
-              onClick={() => app.setActiveFolder('none')}
-            >
-              <span className="folder-dot none" />
-              <span className="folder-name">未分组</span>
-              <span className="folder-count">{ungroupedCount}</span>
-            </button>
-            {app.folders.map((folder) => (
-              <div
-                className={`folder-row${app.activeFolder === folder.id ? ' active' : ''}`}
-                key={folder.id}
-              >
-                <button className="folder-item" onClick={() => app.setActiveFolder(folder.id)}>
-                  <FolderIcon size={15} />
-                  <span className="folder-name">{folder.name}</span>
-                  <span className="folder-count">
-                    {app.items.filter((item) => item.folderId === folder.id).length}
-                  </span>
-                </button>
-                <div className="folder-actions">
-                  <button
-                    className="icon-button tiny"
-                    title="重命名"
-                    onClick={() =>
-                      setFolderDialog({ mode: 'rename', id: folder.id, name: folder.name })
-                    }
-                  >
-                    <EditIcon size={13} />
-                  </button>
-                  <button
-                    className="icon-button tiny"
-                    title="删除文件夹（条目移到未分组）"
-                    onClick={() => app.deleteFolder(folder.id)}
-                  >
-                    <TrashIcon size={13} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="list-meta">
-            <span>条目</span>
-            <span>{app.filteredItems.length}</span>
-          </div>
-
-          <ul className="item-list">
-            {app.filteredItems.map((item) => (
-              <li key={item.id}>
-                <button
-                  className={`item-link${item.id === app.selectedId ? ' selected' : ''}`}
-                  onClick={() => {
-                    app.select(item.id)
-                    setDrawerOpen(false)
-                  }}
-                  aria-current={item.id === app.selectedId}
-                >
-                  <span className="item-name">{item.name || '未命名条目'}</span>
-                  <span className="item-desc">
-                    {item.description || `${item.fields.length} 个字段`}
-                  </span>
-                </button>
-              </li>
-            ))}
-            {app.filteredItems.length === 0 && (
-              <li className="empty-list">
-                <FileIcon size={20} />
-                <span>
-                  {app.query
-                    ? '没有匹配的条目'
-                    : app.activeFolder === 'all'
-                      ? '还没有条目'
-                      : '这里还没有条目'}
-                </span>
-              </li>
-            )}
-          </ul>
-        </aside>
-
-        <main className="editor-pane">
-          {app.selectedItem ? (
-            <>
-              <div className="mobile-editor-bar">
-                <button
-                  className="button ghost"
-                  onClick={() => {
-                    setDrawerAnimate(true)
-                    setDrawerOpen(true)
-                  }}
-                >
-                  <MenuIcon size={18} />
-                  列表
-                </button>
-                <button
-                  className="button ghost"
-                  onClick={() => {
-                    app.select(null)
-                    setDrawerOpen(false)
-                    setDrawerAnimate(false)
-                  }}
-                >
-                  <ChevronLeftIcon size={18} />
-                  返回
-                </button>
-              </div>
-              <ItemEditor app={app} item={app.selectedItem} />
-            </>
-          ) : (
-            <div className="placeholder">
-              <span className="placeholder-icon">
-                <ShieldIcon size={22} />
+              <FolderIcon size={15} />
+              <span className="desktop-folder-name">{folder.name}</span>
+              <span className="desktop-folder-count">
+                {app.items.filter((item) => item.folderId === folder.id).length}
               </span>
-              <p>没有选中的条目</p>
-              <span>从左侧选择一个条目，或新建一个</span>
-            </div>
-          )}
-        </main>
+            </button>
+          ))}
+        </div>
 
-        <div className="drawer-backdrop" onClick={() => setDrawerOpen(false)} />
-      </div>
+        <button className="desktop-lock" onClick={app.lock} disabled={app.busy !== null}>
+          <LockIcon size={16} />
+          锁定
+        </button>
+      </aside>
+
+      {view === 'vault' ? (
+        <>
+          <section className="desktop-list">
+            <VaultList app={app} layout="desktop" onNew={() => setPickerOpen(true)} />
+          </section>
+          <main className="desktop-detail">
+            {app.selectedItem ? (
+              <ItemEditor app={app} item={app.selectedItem} />
+            ) : (
+              <div className="placeholder">
+                <span className="placeholder-icon">
+                  <ShieldIcon size={22} />
+                </span>
+                <p>没有选中的条目</p>
+                <span>从左侧选择一个条目，或新建一个</span>
+              </div>
+            )}
+          </main>
+        </>
+      ) : view === 'otp' ? (
+        <main className="desktop-main">
+          <OtpView
+            app={app}
+            onOpenItem={(id) => {
+              app.select(id)
+              setView('vault')
+            }}
+          />
+        </main>
+      ) : (
+        <main className="desktop-main">
+          <SettingsPanel
+            app={app}
+            onImportCsv={() => setCsvOpen(true)}
+            onDedupe={() => setDedupeOpen(true)}
+            onFolderDialog={setFolderDialog}
+          />
+        </main>
       )}
 
       {pickerOpen && <TemplatePicker app={app} onClose={() => setPickerOpen(false)} />}
-
       {csvOpen && <CsvImportDialog app={app} onClose={() => setCsvOpen(false)} />}
-
       {dedupeOpen && <DedupeDialog app={app} onClose={() => setDedupeOpen(false)} />}
-
       {folderDialog && (
         <PromptDialog
           title={folderDialog.mode === 'create' ? '新建文件夹' : '重命名文件夹'}
