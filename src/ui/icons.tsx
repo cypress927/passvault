@@ -117,6 +117,15 @@ export function TrashIcon(props: IconProps) {
   )
 }
 
+export function CopyIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M15 5.5A1.5 1.5 0 0 0 13.5 4H6.5A2.5 2.5 0 0 0 4 6.5v7A1.5 1.5 0 0 0 5.5 15" />
+    </Svg>
+  )
+}
+
 export function XIcon(props: IconProps) {
   return (
     <Svg {...props}>

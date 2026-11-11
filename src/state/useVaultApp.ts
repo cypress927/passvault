@@ -53,6 +53,7 @@ export interface AppApi {
   createItem(template: Template | null): void
   updateItem(id: string, updater: (item: Item) => Item): void
   deleteItem(id: string): void
+  deleteItems(ids: string[]): void
   moveItem(itemId: string, folderId: string | null): void
 
   addField(itemId: string, kind: FieldKind): void
@@ -117,6 +118,26 @@ function cloneField(field: Field): Field {
     }
   }
   return { key: field.key, hint: field.hint, value: { ...field.value } }
+}
+
+function referencedBlobIds(items: Item[]): Set<string> {
+  const ids = new Set<string>()
+  for (const item of items) {
+    for (const field of item.fields) {
+      if (field.value.kind === 'file' && field.value.blobId) ids.add(field.value.blobId)
+    }
+  }
+  return ids
+}
+
+/** Drop attachments no remaining field points at. */
+function pruneBlobs(blobs: Map<string, Uint8Array>, items: Item[]): Map<string, Uint8Array> {
+  const referenced = referencedBlobIds(items)
+  const pruned = new Map<string, Uint8Array>()
+  for (const [id, bytes] of blobs) {
+    if (referenced.has(id)) pruned.set(id, bytes)
+  }
+  return pruned.size === blobs.size ? blobs : pruned
 }
 
 export function useVaultApp(): AppApi {
@@ -239,24 +260,34 @@ export function useVaultApp(): AppApi {
     [activeFolder],
   )
 
-  const deleteItem = useCallback((id: string) => {
+  const deleteItems = useCallback((ids: string[]) => {
+    if (ids.length === 0) return
+    const removing = new Set(ids)
     setSession((current) => {
       if (!current) return current
+      const items = current.data.manifest.items.filter((item) => !removing.has(item.id))
       return {
         ...current,
         dirty: true,
         data: {
-          ...current.data,
+          blobs: pruneBlobs(current.data.blobs, items),
           manifest: {
             ...current.data.manifest,
             updatedAt: new Date().toISOString(),
-            items: current.data.manifest.items.filter((item) => item.id !== id),
+            items,
           },
         },
       }
     })
-    setSelectedId((current) => (current === id ? null : current))
+    setSelectedId((current) => (current !== null && removing.has(current) ? null : current))
   }, [])
+
+  const deleteItem = useCallback(
+    (id: string) => {
+      deleteItems([id])
+    },
+    [deleteItems],
+  )
 
   const moveItem = useCallback(
     (itemId: string, folderId: string | null) => {
@@ -553,6 +584,7 @@ export function useVaultApp(): AppApi {
     createItem,
     updateItem,
     deleteItem,
+    deleteItems,
     moveItem,
     addField,
     updateField,

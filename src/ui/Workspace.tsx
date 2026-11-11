@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import type { AppApi } from '../state/useVaultApp'
 import { CsvImportDialog } from './CsvImportDialog'
+import { DedupeDialog } from './DedupeDialog'
 import { ItemEditor } from './ItemEditor'
 import { PromptDialog } from './PromptDialog'
 import { TemplatePicker } from './TemplatePicker'
 import {
   ChevronLeftIcon,
+  CopyIcon,
   DownloadIcon,
   EditIcon,
   FileIcon,
@@ -28,6 +30,7 @@ export function Workspace({ app }: { app: AppApi }) {
   const [pickerOpen, setPickerOpen] = useState(false)
   const [folderDialog, setFolderDialog] = useState<FolderDialog | null>(null)
   const [csvOpen, setCsvOpen] = useState(false)
+  const [dedupeOpen, setDedupeOpen] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [drawerAnimate, setDrawerAnimate] = useState(false)
   const ungroupedCount = app.items.filter((item) => item.folderId === null).length
@@ -56,6 +59,16 @@ export function Workspace({ app }: { app: AppApi }) {
           )}
         </div>
         <div className="toolbar-actions">
+          <button
+            className="button ghost"
+            aria-label="去重"
+            title="去重"
+            onClick={() => setDedupeOpen(true)}
+            disabled={app.busy !== null}
+          >
+            <CopyIcon size={16} />
+            <span className="button-label">去重</span>
+          </button>
           <button
             className="button"
             aria-label="导入 CSV"
@@ -258,6 +271,8 @@ export function Workspace({ app }: { app: AppApi }) {
       {pickerOpen && <TemplatePicker app={app} onClose={() => setPickerOpen(false)} />}
 
       {csvOpen && <CsvImportDialog app={app} onClose={() => setCsvOpen(false)} />}
+
+      {dedupeOpen && <DedupeDialog app={app} onClose={() => setDedupeOpen(false)} />}
 
       {folderDialog && (
         <PromptDialog
